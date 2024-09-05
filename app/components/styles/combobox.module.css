@@ -1,0 +1,7 @@
+.option {
+    color: var(--text-50);
+}
+
+.option:hover {
+    background: var(--background-800);
+}
