@@ -1,9 +1,15 @@
 import { useState } from 'react'
-import { Input, InputBase, Combobox, useCombobox } from '@mantine/core'
+import { Input, InputBase, Combobox, useCombobox, Tooltip, ActionIcon } from '@mantine/core'
 import { theme } from '../../theme'
-import classes from './styles/combobox.module.css'
+import classes from './styles/combobox.module.scss'
 
-const groceries = ['🍎 Apples', '🍌 Bananas', '🥦 Broccoli', '🥕 Carrots', '🍫 Chocolate']
+const groceries = [
+    'Chocological',
+    'In Hell We Live, Lament',
+    'Between Two Worlds',
+    'Colorful',
+    'Draft #1'
+]
 
 export default function Demo() {
     const combobox = useCombobox({
@@ -13,8 +19,8 @@ export default function Demo() {
     const [value, setValue] = useState<string | null>(null)
 
     const options = groceries.map((item) => (
-        <Combobox.Option value={item} key={item} className={classes.option}>
-            {item}
+        <Combobox.Option key={item} value={item} className={classes.option}>
+            <span className={classes.optionSpan}>{item}</span>
         </Combobox.Option>
     ))
 
@@ -33,22 +39,27 @@ export default function Demo() {
             }}
         >
             <Combobox.Target>
-                <InputBase
-                    styles={{
-                        input: {
-                            background: theme.colors!.background![0],
-                            border: `1px solid ${theme.colors!.background![8]}`
-                        }
-                    }}
-                    component="button"
-                    type="button"
-                    pointer
-                    rightSection={<Combobox.Chevron />}
-                    rightSectionPointerEvents="none"
-                    onClick={() => combobox.toggleDropdown()}
+                <Tooltip
+                    classNames={{ tooltip: classes.tooltip }}
+                    label={value ?? 'none'}
+                    position="right"
+                    openDelay={1000}
                 >
-                    {value || <Input.Placeholder>Pick value</Input.Placeholder>}
-                </InputBase>
+                    <InputBase
+                        classNames={{
+                            input: classes.searchInput,
+                            section: classes.searchSection
+                        }}
+                        component="button"
+                        type="button"
+                        pointer
+                        rightSection={<Combobox.Chevron />}
+                        rightSectionPointerEvents="none"
+                        onClick={() => combobox.toggleDropdown()}
+                    >
+                        {value || <Input.Placeholder>Select music</Input.Placeholder>}
+                    </InputBase>
+                </Tooltip>
             </Combobox.Target>
 
             <Combobox.Dropdown>

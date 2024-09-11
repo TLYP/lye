@@ -1,15 +1,14 @@
 'use client'
 import { ChangeEvent, useEffect, useRef, useState } from 'react'
-import FolderIcon from './icons/folder'
-import SpotifyIcon from './icons/spotify'
-import PlayIcon from './icons/play'
+
+import PlayIcon from '../icons/play'
 //import PauseIcon from './icons/pause'
 import { notifications } from '@mantine/notifications'
 import { useDispatch, useSelector } from 'react-redux'
-import { RootState } from '../../lib/store'
-import { setMusicUrl } from '../../lib/localAudio'
-import { addData, getData, getDatabase } from '../cachedb'
-import ComboBox from './combobox'
+import { RootState } from '../../../lib/store'
+import { setMusicUrl } from '../../../lib/localAudio'
+import { addData, getData, getDatabase } from '../../cachedb'
+import SourceSelect from './sourceSelect'
 
 function StageChip({ name, path }: { name: string; path: string }) {
     return (
@@ -32,7 +31,6 @@ function Music() {
         getDatabase().then((db) =>
             getData(db)
                 .then((data) => {
-                    console.log(data.data)
                     dispatch(setMusicUrl(data.data))
                 })
                 .catch((err) => {})
@@ -87,8 +85,9 @@ function Music() {
         }
     }
 
-    return (
-        <div className="flex  justify-evenly items-center min-w-20 h-12 border-2 border-text-200">
+    return <></>
+    /* return (
+        <div className="flex  justify-evenly items-center min-w-20 h-12">
             {musicUrl == null && (
                 <>
                     <label className="fill-accent-800 opacity-50 hover:opacity-100 cursor-pointer transition">
@@ -108,14 +107,14 @@ function Music() {
             )}
 
             {musicUrl != null && (
-                <div className="flex justify-center items-center min-w-20 h-12 border-2 border-text-200">
+                <div className="flex justify-center items-center min-w-20 h-12">
                     <label className="flex flex-col fill-accent-800 opacity-100 hover:opacity-100 cursor-pointer transition">
                         <FolderIcon className="fill-accent-100" />
                     </label>
                 </div>
             )}
         </div>
-    )
+    ) */
 }
 
 function Player() {
@@ -150,11 +149,7 @@ function Player() {
 export default function Header() {
     return (
         <div className="flex bg-background-base border-b-2 border-background-900">
-            <div className="flex items-center min-w-48 h-12 px-4">
-                <div className="w-full">
-                    <ComboBox />
-                </div>
-            </div>
+            <SourceSelect />
             <div className="flex w-full h-12">
                 <Music />
                 <Player />

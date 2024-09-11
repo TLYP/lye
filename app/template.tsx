@@ -1,4 +1,4 @@
-import Header from './components/header'
+import Header from './components/header/index'
 import StoreProvider from './StoreProvider'
 
 export default function Template({ children }: { children: React.ReactNode }) {

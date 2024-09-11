@@ -1,20 +1,12 @@
-export const getDatabase = (name: string = 'database'): Promise<IDBDatabase> => {
-    return new Promise((res, rej) => {
-        const request: IDBOpenDBRequest = indexedDB.open('localdb', 1)
-
-        request.onerror = (error) => console.error(error)
-        request.onsuccess = (event) => res((event.target as IDBOpenDBRequest).result)
-
-        request.onupgradeneeded = (event) => {
-            const db = (event.target as IDBOpenDBRequest).result
-            db.createObjectStore('file', { keyPath: 'id' })
-            db.createObjectStore('metadata', { keyPath: 'id' })
-            db.createObjectStore('lyrics', { keyPath: 'id' })
-        }
-    })
+export type FileCache = {
+    id: string
+    data: string
+    filename: string
+    filetype: string
+    filesize: string
 }
 
-export const addData = async (data: any, db: IDBDatabase) => {
+export const addData = async (data: FileCache, db: IDBDatabase) => {
     return new Promise((res, rej) => {
         const transaction = db.transaction(['audio'], 'readwrite')
         const objectStore = transaction.objectStore('audio')

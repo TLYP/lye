@@ -1,0 +1,37 @@
+.searchInput {
+    background: var(--background-base);
+    border: 1px solid var(--background-800);
+    color: var(--text-200);
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    span {
+        color: var(--text-400);
+    }
+}
+
+.searchSection svg {
+    color: var(--text-400);
+}
+
+.option {
+    color: var(--text-200);
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    &:hover {
+        background: var(--background-800);
+    }
+}
+
+.optionSpan {
+    width: 100%;
+    white-space: nowrap;
+}
+
+.tooltip {
+    background: var(--background-300);
+    color: var(--text-950);
+}
