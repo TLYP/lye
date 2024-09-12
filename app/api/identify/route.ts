@@ -25,6 +25,8 @@ export type Song = {
     album: Album
     track_number: number
     artists: Artist[]
+    duration_secs: number
+    preview_url: string
 }
 
 export async function POST(request: Request) {

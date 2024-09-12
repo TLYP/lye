@@ -5,12 +5,10 @@ import { Song } from '../identify/route'
 export async function GET(request: Request) {
     const query = new URL(request.url).searchParams.get('query') ?? ''
 
-    console.log('hello')
     const req = await axios.get(
         'http://localhost:5000/spotify_search?q=' + encodeURIComponent(query)
     )
 
-    console.log('world')
     const data: { code: number; query: string; tracks: Song[] } = req.data
 
     if (data.code !== 0) return NextResponse.json({ code: 1 })

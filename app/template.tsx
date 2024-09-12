@@ -6,7 +6,7 @@ export default function Template({ children }: { children: React.ReactNode }) {
         <StoreProvider>
             <div className="flex flex-col h-screen w-screen">
                 <Header />
-                <div className="flex-grow">{children}</div>
+                <div className="flex-grow h-full overflow-y-scroll">{children}</div>
             </div>
         </StoreProvider>
     )
