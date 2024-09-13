@@ -1,26 +1,29 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Input, InputBase, Combobox, useCombobox, Tooltip, ActionIcon } from '@mantine/core'
-import { theme } from '../../theme'
-import classes from './styles/combobox.module.scss'
-
-const groceries = [
-    'Chocological',
-    'In Hell We Live, Lament',
-    'Between Two Worlds',
-    'Colorful',
-    'Draft #1'
-]
+import { theme } from '../../../theme'
+import classes from '../styles/combobox.module.scss'
+import { useAppSelector, useAppDispatch } from '@/lib/hooks'
+import { setActiveSession } from '@/lib/sessions'
+import { Session } from '@/app/cachedb/sessions'
 
 export default function Demo() {
+    const sessions = useAppSelector((state) => state.sessions.sessions)
+    const activeSession = useAppSelector((state) => state.sessions.activeSession)
     const combobox = useCombobox({
         onDropdownClose: () => combobox.resetSelectedOption()
     })
 
-    const [value, setValue] = useState<string | null>(null)
+    const dispatch = useAppDispatch()
 
-    const options = groceries.map((item) => (
-        <Combobox.Option key={item} value={item} className={classes.option}>
-            <span className={classes.optionSpan}>{item}</span>
+    const [name, setName] = useState<string | null>(activeSession?.name ?? null)
+
+    useEffect(() => {
+        setName(activeSession?.name ?? null)
+    }, [activeSession])
+
+    const options = sessions.map((item) => (
+        <Combobox.Option key={item.uuid} value={item.uuid} className={classes.option}>
+            <span className={classes.optionSpan}>{item.name}</span>
         </Combobox.Option>
     ))
 
@@ -34,16 +37,22 @@ export default function Demo() {
             }}
             store={combobox}
             onOptionSubmit={(val) => {
-                setValue(val)
                 combobox.closeDropdown()
+
+                const session = sessions.find((session) => session.uuid === val)
+                if (!session || session.uuid == activeSession?.uuid) return
+
+                setName(session.name)
+                dispatch(setActiveSession(session))
+                Session.setActiveSession(session.uuid)
             }}
         >
             <Combobox.Target>
                 <Tooltip
                     classNames={{ tooltip: classes.tooltip }}
-                    label={value ?? 'none'}
+                    label={name ?? 'none'}
                     position="right"
-                    openDelay={1000}
+                    openDelay={300}
                 >
                     <InputBase
                         classNames={{
@@ -57,7 +66,7 @@ export default function Demo() {
                         rightSectionPointerEvents="none"
                         onClick={() => combobox.toggleDropdown()}
                     >
-                        {value || <Input.Placeholder>Select music</Input.Placeholder>}
+                        {name || <Input.Placeholder>Select music</Input.Placeholder>}
                     </InputBase>
                 </Tooltip>
             </Combobox.Target>

@@ -1,6 +1,6 @@
 import { ActionIcon, Menu, rem } from '@mantine/core'
 import { IconPlus, IconFile, IconBrandSpotify } from '@tabler/icons-react'
-import ComboBox from '../combobox'
+import ComboBox from './combobox'
 import LocalFileModal from './localFileModal'
 import { useDisclosure } from '@mantine/hooks'
 

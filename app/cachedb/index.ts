@@ -1,19 +1,23 @@
+import Files from './file'
+import Lyrics from './lyrics'
+import Sessions from './sessions'
+
 // fast hashing function
 export const cyrb53 = (str: string, seed = 0) => {
-    let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+    let h1 = 0xdeadbeef ^ seed,
+        h2 = 0x41c6ce57 ^ seed
     for (let i = 0, ch; i < str.length; i++) {
-        ch = str.charCodeAt(i);
-        h1 = Math.imul(h1 ^ ch, 2654435761);
-        h2 = Math.imul(h2 ^ ch, 1597334677);
+        ch = str.charCodeAt(i)
+        h1 = Math.imul(h1 ^ ch, 2654435761)
+        h2 = Math.imul(h2 ^ ch, 1597334677)
     }
-    h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507);
-    h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909);
-    h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507);
-    h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+    h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507)
+    h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909)
+    h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507)
+    h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909)
 
-    return 4294967296 * (2097151 & h2) + (h1 >>> 0);
-};
-
+    return 4294967296 * (2097151 & h2) + (h1 >>> 0)
+}
 
 export const getDatabase = (name: string = 'database'): Promise<IDBDatabase> => {
     return new Promise((res, rej) => {
@@ -24,10 +28,10 @@ export const getDatabase = (name: string = 'database'): Promise<IDBDatabase> => 
 
         request.onupgradeneeded = (event) => {
             const db = (event.target as IDBOpenDBRequest).result
-            db.createObjectStore('file', { keyPath: 'uuid' })
-            db.createObjectStore('metadata', { keyPath: 'uuid' })
-            db.createObjectStore('lyrics', { keyPath: 'uuid' })
-            db.createObjectStore('sessions', { keyPath: 'uuid' })
+            db.createObjectStore(Files.TABLE_NAME, { keyPath: 'uuid' })
+            db.createObjectStore(Lyrics.TABLE_NAME, { keyPath: 'uuid' })
+            db.createObjectStore(Sessions.TABLE_NAME, { keyPath: 'uuid' })
+            db.createObjectStore('metadatas', { keyPath: 'uuid' })
         }
     })
 }

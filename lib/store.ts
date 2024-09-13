@@ -2,10 +2,16 @@ import { configureStore } from '@reduxjs/toolkit'
 import LyricsReducer from './lyrics'
 import MetadataReducer from './metadata'
 import LocalaudioReducer from './localAudio'
+import SessionsReducer from './sessions'
 
 export const makeStore = () => {
     return configureStore({
-        reducer: { lyrics: LyricsReducer, metadata: MetadataReducer, localaudio: LocalaudioReducer }
+        reducer: {
+            lyrics: LyricsReducer,
+            metadata: MetadataReducer,
+            localaudio: LocalaudioReducer,
+            sessions: SessionsReducer
+        }
     })
 }
 
