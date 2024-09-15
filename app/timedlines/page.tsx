@@ -91,15 +91,6 @@ export default function Page() {
         setActiveLyric(data as any)
     }, [everyLyrics, activeSession])
 
-    useEffect(() => {
-        const c = async () => {
-            if (activeSession == null) return
-            const timedlines = await TimedLines.get(activeSession.timedlinesRef)
-        }
-
-        c()
-    }, [activeSession])
-
     return (
         <div className="flex flex-col items-center gap-4 pb-52 bg-background-base w-full h-full py-6 overflow-y-scroll">
             <div className="flex gap-1">
