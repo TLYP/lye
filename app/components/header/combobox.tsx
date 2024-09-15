@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Input, InputBase, Combobox, useCombobox, Tooltip, ActionIcon } from '@mantine/core'
 import { theme } from '../../../theme'
-import classes from '../styles/combobox.module.scss'
 import { useAppSelector, useAppDispatch } from '@/lib/hooks'
 import { setActiveSession } from '@/lib/sessions'
 import { Session } from '@/app/cachedb/sessions'
+import classes from '../styles/combobox.module.scss'
 
 export default function Demo() {
     const sessions = useAppSelector((state) => state.sessions.sessions)
@@ -58,6 +58,14 @@ export default function Demo() {
                         classNames={{
                             input: classes.searchInput,
                             section: classes.searchSection
+                        }}
+                        styles={{
+                            input: {
+                                background: 'var(--background-base)',
+                                color: 'var(--text-400)',
+                                overflow: 'hidden',
+                                border: '1px solid var(--background-800)'
+                            }
                         }}
                         component="button"
                         type="button"

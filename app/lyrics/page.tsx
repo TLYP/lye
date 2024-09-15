@@ -1,12 +1,10 @@
 'use client'
-import { Alert, Button, Text, Tooltip } from '@mantine/core'
+import { Button, Text, Tooltip } from '@mantine/core'
 import { useEffect, useRef, useState } from 'react'
-import { cyrb53 } from '../cachedb/index'
 import { diffArrays } from 'diff'
 import { IconInfoCircle } from '@tabler/icons-react'
 import { useAppSelector, useAppDispatch } from '@/lib/hooks'
 import * as Lyrics from '@/lib/lyrics'
-import { Lyric, LyricData, LyricReference } from '../cachedb/lyrics'
 import { Session } from '../cachedb/sessions'
 
 export default function Page() {
@@ -15,9 +13,7 @@ export default function Page() {
     const [activeLyric, setActiveLyric] = useState<string>('')
     const dispatch = useAppDispatch()
     const [mapped, setMapped] = useState(['', ''])
-    // const prevalue = useAppSelector((state) => state.lyrics)
-
-    const [value, setValue] = useState('')
+    const [value, setValue] = useState<null | string>(null)
     const textarea = useRef<HTMLTextAreaElement>()
 
     useEffect(() => {
@@ -31,7 +27,7 @@ export default function Page() {
         setValue(data)
     }, [everyLyrics, activeSession])
 
-    const onchange = (e: any) => {
+    const onchange = () => {
         const text = textarea!.current!.value
         setValue(text)
         const content = text
@@ -82,7 +78,7 @@ export default function Page() {
 
     const saveHandle = async () => {
         setMapped([])
-        if (activeSession == null) return
+        if (activeSession == null || value == null) return
         const session = await Session.get(activeSession.uuid)
 
         const lines = value.split('\n').map((t) => ({
@@ -105,71 +101,81 @@ export default function Page() {
 
     return (
         <div className="flex flex-col items-center gap-4 bg-background-base w-full h-full py-6 overflow-y-scroll">
-            <div className="flex gap-3 bg-background-900 py-3 px-1 w-fit h-fit rounded-lg">
-                <div className="flex items-end flex-col w-6 text-text-500">
-                    {value.split('\n').map((_, idx) =>
-                        idx >= 1 &&
-                        value.split('\n')[idx].startsWith('[') &&
-                        value.split('\n')[idx].endsWith(']') &&
-                        value.split('\n')[idx - 1].trim() != '' ? (
-                            <Tooltip
-                                color="yellow"
-                                key={idx}
-                                label={
-                                    <div className="flex gap-1 items-center">
-                                        <IconInfoCircle />
-                                        should include empty line above
-                                    </div>
-                                }
-                                position="left"
-                            >
+            {value == null ? (
+                <>Getting locally stored</>
+            ) : (
+                <>
+                    <div className="flex gap-3 bg-background-900 py-3 px-1 w-fit h-fit rounded-lg">
+                        <div className="flex items-end flex-col w-6 text-text-500">
+                            {value.split('\n').map((_, idx) =>
+                                idx >= 1 &&
+                                value.split('\n')[idx].startsWith('[') &&
+                                value.split('\n')[idx].endsWith(']') &&
+                                value.split('\n')[idx - 1].trim() != '' ? (
+                                    <Tooltip
+                                        color="yellow"
+                                        key={idx}
+                                        label={
+                                            <div className="flex gap-1 items-center">
+                                                <IconInfoCircle />
+                                                should include empty line above
+                                            </div>
+                                        }
+                                        position="left"
+                                    >
+                                        <span
+                                            className="flex items-center cursor-default"
+                                            style={{ height: '28px' }}
+                                        >
+                                            <Text variant="text" c={'orange'}>
+                                                {idx + 1}
+                                            </Text>
+                                        </span>
+                                    </Tooltip>
+                                ) : (
+                                    <span
+                                        key={idx}
+                                        className="flex items-center cursor-default"
+                                        style={{ height: '28px' }}
+                                    >
+                                        <Text variant="text">{idx + 1}</Text>
+                                    </span>
+                                )
+                            )}
+                        </div>
+                        <textarea
+                            className={'text-text-300 text-lg'}
+                            ref={textarea as any}
+                            onChange={onchange}
+                            value={value}
+                            style={{
+                                width: '700px',
+                                backgroundColor: 'transparent',
+                                outline: 'none',
+                                textWrap: 'nowrap',
+                                resize: 'none'
+                            }}
+                        />
+
+                        <div className="flex items-start flex-col w-6 text-text-300">
+                            {mapped.map((i, idx) => (
                                 <span
-                                    className="flex items-center cursor-default"
+                                    className="flex items-center"
+                                    key={idx}
                                     style={{ height: '28px' }}
                                 >
-                                    <Text variant="text" c={'orange'}>
-                                        {idx + 1}
-                                    </Text>
+                                    {i}
                                 </span>
-                            </Tooltip>
-                        ) : (
-                            <span
-                                key={idx}
-                                className="flex items-center cursor-default"
-                                style={{ height: '28px' }}
-                            >
-                                <Text variant="text">{idx + 1}</Text>
-                            </span>
-                        )
-                    )}
-                </div>
-                <textarea
-                    className={'text-text-300 text-lg'}
-                    ref={textarea as any}
-                    onChange={onchange}
-                    value={value}
-                    style={{
-                        width: '700px',
-                        backgroundColor: 'transparent',
-                        outline: 'none',
-                        textWrap: 'nowrap',
-                        resize: 'none'
-                    }}
-                />
-
-                <div className="flex items-start flex-col w-6 text-text-300">
-                    {mapped.map((i, idx) => (
-                        <span className="flex items-center" key={idx} style={{ height: '28px' }}>
-                            {i}
-                        </span>
-                    ))}
-                </div>
-            </div>
-            <div style={{ width: '780px' }}>
-                <Button disabled={mapped.length == 0} onClick={saveHandle}>
-                    Save
-                </Button>
-            </div>
+                            ))}
+                        </div>
+                    </div>
+                    <div style={{ width: '780px' }}>
+                        <Button disabled={mapped.length == 0} onClick={saveHandle}>
+                            Save
+                        </Button>
+                    </div>
+                </>
+            )}
         </div>
     )
 }

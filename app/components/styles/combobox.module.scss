@@ -1,15 +1,7 @@
 .searchInput {
-    background: var(--background-base);
-    border: 1px solid var(--background-800);
-    color: var(--text-200);
-
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-
-    span {
-        color: var(--text-400);
-    }
 }
 
 .searchSection svg {

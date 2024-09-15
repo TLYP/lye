@@ -1,6 +1,7 @@
 import Files from './file'
 import Lyrics from './lyrics'
 import Sessions from './sessions'
+import TimedLines from './timedlines'
 
 // fast hashing function
 export const cyrb53 = (str: string, seed = 0) => {
@@ -31,6 +32,7 @@ export const getDatabase = (name: string = 'database'): Promise<IDBDatabase> => 
             db.createObjectStore(Files.TABLE_NAME, { keyPath: 'uuid' })
             db.createObjectStore(Lyrics.TABLE_NAME, { keyPath: 'uuid' })
             db.createObjectStore(Sessions.TABLE_NAME, { keyPath: 'uuid' })
+            db.createObjectStore(TimedLines.TABLE_NAME, { keyPath: 'uuid' })
             db.createObjectStore('metadatas', { keyPath: 'uuid' })
         }
     })

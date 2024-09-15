@@ -9,6 +9,7 @@ export type SessionData = {
     name: string
     fileRef: string
     lyricRef: string
+    timedlinesRef: string
     // metadataRef: string
     // timedLinesRef: string
     // timedLyricsRef: string

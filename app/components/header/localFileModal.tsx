@@ -26,8 +26,10 @@ import PlayIcon from '@/app/components/icons/play'
 import PauseIcon from '@/app/components/icons/pause'
 import { File as CacheFile } from '@/app/cachedb/file'
 import { Session } from '@/app/cachedb/sessions'
+import { TimedLines as CacheTimedLines } from '@/app/cachedb/timedlines'
 import * as Sessions from '@/lib/sessions'
 import * as Lyrics from '@/lib/lyrics'
+import * as TimedLines from '@/lib/timedlines'
 import { useAppDispatch } from '@/lib/hooks'
 import { Lyric } from '@/app/cachedb/lyrics'
 
@@ -324,9 +326,14 @@ export default function Component({ close, opened }: { opened: boolean; close: (
             lines: []
         }).save()
 
+        const timedlines = await CacheTimedLines.from({
+            lines: []
+        }).save()
+
         const session = await Session.from({
             fileRef: cacheFile.uuid,
             lyricRef: lyric.uuid,
+            timedlinesRef: timedlines.uuid,
             name: selectedTrack?.name!
         }).save()
 

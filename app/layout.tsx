@@ -1,3 +1,5 @@
+import StoreProvider from './StoreProvider'
+import Header from './components/header/index'
 import { MantineProvider, ColorSchemeScript } from '@mantine/core'
 import { Notifications } from '@mantine/notifications'
 import type { Metadata } from 'next'
@@ -26,8 +28,13 @@ export default function RootLayout({
             </head>
             <body className={inter.className}>
                 <MantineProvider theme={theme} defaultColorScheme="dark">
-                    <Notifications />
-                    {children}
+                    <StoreProvider>
+                        <Notifications />
+                        <div className="flex flex-col h-screen w-screen">
+                            <Header />
+                            <div className="flex-grow h-full overflow-y-scroll">{children}</div>
+                        </div>
+                    </StoreProvider>
                 </MantineProvider>
             </body>
         </html>

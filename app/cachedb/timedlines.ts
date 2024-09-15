@@ -1,27 +1,28 @@
 import { getDatabase } from '.'
 
-export const TABLE_NAME = 'lyrics'
+export const TABLE_NAME = 'timedlyrics'
 
-export type LyricLine = {
-    content: string
+export type TimedLinesLine = {
+    start: number
+    end: number
     uhash: number // unique hash
     chash: number // content hash
     lhash: number // line number hash
 }
 
-export type LyricData = {
+export type TimedLyricData = {
     uuid: string
-    lines: Array<LyricLine>
+    lines: Array<TimedLinesLine>
 }
 
-export class Lyric {
-    constructor(public data: LyricData) {}
+export class TimedLines {
+    constructor(public data: TimedLyricData) {}
 
     public async save(db?: IDBDatabase) {
         if (!db) db = await getDatabase()
         await add(this.data, db)
 
-        return new LyricReference(this.data, db)
+        return new TimedLinesReference(this.data, db)
     }
 
     // statics
@@ -30,7 +31,7 @@ export class Lyric {
         if (!db) db = await getDatabase()
 
         const data = await get(uuid, db)
-        return new LyricReference(data, db)
+        return new TimedLinesReference(data, db)
     }
 
     public static async getAll(db?: IDBDatabase) {
@@ -39,22 +40,22 @@ export class Lyric {
         const lyrics = []
 
         for (let lyricItem of await getAll(db)) {
-            lyrics.push(await Lyric.get(lyricItem.uuid))
+            lyrics.push(await TimedLines.get(lyricItem.uuid))
         }
 
         return lyrics
     }
 
-    public static from(data: Omit<LyricData, 'uuid'>) {
-        const ldata = data as LyricData
+    public static from(data: Omit<TimedLyricData, 'uuid'>) {
+        const ldata = data as TimedLyricData
         ldata['uuid'] = crypto.randomUUID()
-        return new Lyric(ldata)
+        return new TimedLines(ldata)
     }
 }
 
-export class LyricReference {
+export class TimedLinesReference {
     constructor(
-        private data: LyricData,
+        private data: TimedLyricData,
         private db: IDBDatabase
     ) {}
 
@@ -66,12 +67,12 @@ export class LyricReference {
         return this.data['uuid']
     }
 
-    public get lines() {
-        return this.data['lines']
+    public get lines(): TimedLinesReferenceLine[] {
+        return this.data['lines'].map((data) => new TimedLinesReferenceLine(data))
     }
 
-    public set lines(lines: LyricLine[]) {
-        this.data['lines'] = lines
+    public set lines(value: TimedLinesLine[]) {
+        this.data['lines'] = value
     }
 
     public async update() {
@@ -79,7 +80,27 @@ export class LyricReference {
     }
 }
 
-export const add = async (data: LyricData, db: IDBDatabase) => {
+export class TimedLinesReferenceLine {
+    constructor(public data: TimedLinesLine) {}
+
+    public get start(): number {
+        return this.data['start']
+    }
+
+    public set start(value: number) {
+        this.data['start'] = value
+    }
+
+    public get end(): number {
+        return this.data['end']
+    }
+
+    public get hash(): { c: number; l: number; u: number } {
+        return { c: this.data['chash'], l: this.data['lhash'], u: this.data['uhash'] }
+    }
+}
+
+export const add = async (data: TimedLyricData, db: IDBDatabase) => {
     return new Promise((res, rej) => {
         const transaction = db.transaction([TABLE_NAME], 'readwrite')
         const objectStore = transaction.objectStore(TABLE_NAME)
@@ -92,7 +113,7 @@ export const add = async (data: LyricData, db: IDBDatabase) => {
 }
 
 // updates or adds
-export const put = async (data: LyricData, db: IDBDatabase) => {
+export const put = async (data: TimedLyricData, db: IDBDatabase) => {
     return new Promise((res, rej) => {
         const transaction = db.transaction([TABLE_NAME], 'readwrite')
         const objectStore = transaction.objectStore(TABLE_NAME)
@@ -106,7 +127,7 @@ export const put = async (data: LyricData, db: IDBDatabase) => {
     })
 }
 
-export const getAll = async (db: IDBDatabase): Promise<Array<LyricData>> => {
+export const getAll = async (db: IDBDatabase): Promise<Array<TimedLyricData>> => {
     return new Promise((res, rej) => {
         const transaction = db.transaction([TABLE_NAME], 'readonly')
         const objectStore = transaction.objectStore(TABLE_NAME)
@@ -121,7 +142,7 @@ export const getAll = async (db: IDBDatabase): Promise<Array<LyricData>> => {
     })
 }
 
-export const get = async (uuid: string, db: IDBDatabase): Promise<LyricData> => {
+export const get = async (uuid: string, db: IDBDatabase): Promise<TimedLyricData> => {
     return new Promise((res, rej) => {
         const transaction = db.transaction([TABLE_NAME], 'readonly')
         const objectStore = transaction.objectStore(TABLE_NAME)
