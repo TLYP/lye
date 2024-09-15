@@ -73,6 +73,24 @@ function LyricsView({ activeLyric }: { activeLyric: Array<[number, string]> }) {
     )
 }
 
+function FocusEditorView() {
+    return <div className='flex flex-col grow bg-background-800'>
+        <div className='flex h-4 w-full '>
+            {
+                Array.from({ 'length': 12 }).map(() => <div className='min-w-[2px] mx-2 h-2 bg-text-900'></div>)
+            }
+        </div>
+        <div className='h-7 flex relative grow w-full p-1'>
+            <div className='flex justify-center px-8 items-center bg-text-600 w-2 h-full'>
+                1:2
+            </div>
+        </div>
+        <div className='h-7 flex relative grow w-full p-1'>
+            <div className='flex justify-center px-8 items-center bg-text-600 w-2 h-full'>2:3</div>
+        </div>
+    </div>
+}
+
 export default function Page() {
     const activeSession = useAppSelector((state) => state.sessions.activeSession)
     const everyLyrics = useAppSelector((state) => state.lyrics.lyrics)
@@ -97,7 +115,16 @@ export default function Page() {
                 <LyricsView activeLyric={activeLyric} />
             </div>
 
-            <div className="fixed bottom-0 w-screen h-44 bg-background-900"></div>
+            <div className="flex fixed bottom-0 w-screen h-44 bg-background-900">
+                <div className='w-16 h-full bg-text-950'></div>
+                <div className='flex flex-col w-full'>
+                    <div className='w-full h-6'>tools</div>
+                    <div className='w-full h-14 bg-background-700'>
+                        full view
+                    </div>
+                    <FocusEditorView />
+                </div>
+            </div>
         </div>
     )
 }
