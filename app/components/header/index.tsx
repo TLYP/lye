@@ -121,7 +121,6 @@ function Player() {
 
 export default function Header() {
     const dispatch = useAppDispatch()
-    console.log('hello world')
     useEffect(() => {
         ;(async () => {
             const session = await Session.getActiveSession()
@@ -139,7 +138,7 @@ export default function Header() {
             <div className="flex w-full h-12">
                 <Player />
             </div>
-            <div className="flex items-center gap-6 h-12 px-16 ">
+            <div className="flex items-center gap-6 h-12 px-16">
                 <StageChip path="/metadata" name="Metadata" />
                 <StageChip path="/lyrics" name="Add Lyrics" />
                 <StageChip path="/timedlines" name="Timed Lines" />
