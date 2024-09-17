@@ -78,7 +78,7 @@ export default function Component() {
             if (naudio.paused) return
             // return
             dispatch(AudioPlayerActions.updateCurrentTime(naudio.currentTime))
-        }, 150)
+        }, 50)
 
         naudio.onplay = () => {
             dispatch(AudioPlayerActions.updatePaused(false))
