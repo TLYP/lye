@@ -59,7 +59,7 @@ export default function FocusEditorView({
     zoomSize,
     detailTime
 }: {
-    timedlines: Array<{ start: number; end: number; uhash: number }>
+    timedlines: Array<{ start: number; end: number; linenumber: number; uhash: number }>
     zoomSize: number
     detailTime: number
     setTimedlines: Dispatch<SetStateAction<Array<any>>>
@@ -69,6 +69,10 @@ export default function FocusEditorView({
     const duration = useAppSelector((state) =>
         Math.floor((state.audioPlayer.audio?.duration ?? 0) * 1000)
     )
+    const currentTime = useAppSelector((state) =>
+        Math.floor((state.audioPlayer.audio?.currentTime ?? 0) * 1000)
+    )
+
     const [width, setWidth] = useState(0)
     const [defaultWidth, setDefaultWidth] = useState(0)
     const [activityTarget, setActivityTarget] = useState<number | null>(null)
@@ -76,6 +80,7 @@ export default function FocusEditorView({
     const [mouseActivity, setMouseActivity] = useState<
         'inactive' | 'moving' | 'resizeleft' | 'resizeright'
     >('inactive')
+    const [scrollLeft, setScrollLeft] = useState(0)
 
     useEffect(() => {
         if (!state.current) return
@@ -88,6 +93,13 @@ export default function FocusEditorView({
     useEffect(() => {
         if (!rootDiv.current) return
         setDefaultWidth(rootDiv.current.getBoundingClientRect().width)
+
+        const handleScroll = () => setScrollLeft(rootDiv.current!.scrollLeft)
+        rootDiv.current.addEventListener('scroll', handleScroll)
+
+        return () => {
+            rootDiv.current?.removeEventListener('scroll', handleScroll)
+        }
     }, [rootDiv])
 
     const movingTarget = (x: number) => {
@@ -184,7 +196,7 @@ export default function FocusEditorView({
         const Xoffset = 64
 
         const f = (x: number) => duration * (x / width) // px to ms
-        let x = e.clientX - Xoffset - activityInitialOffset + rootDiv.current.scrollLeft
+        let x = e.clientX - Xoffset - activityInitialOffset + scrollLeft
         if (x < 0) x = 0
 
         if (mouseActivity == 'moving') movingTarget(x)
@@ -227,7 +239,10 @@ export default function FocusEditorView({
             className="flex overflow-y-hidden overflow-x-scroll flex-col grow bg-background-800 bg-gradient-to-b from-background-950 to-45% to-background-900"
         >
             <div className="flex flex-col grow relative" style={{ width: width + 'px' }}>
-                <div className="left-[900px] top-0 w-[2px] h-full bg-text-800 opacity-85 absolute z-50"></div>
+                <div
+                    style={{ left: (currentTime / duration) * width }}
+                    className="top-0 min-w-1 h-full bg-text-800 opacity-85 absolute z-50"
+                ></div>
                 <div className="flex justify-between h-4 w-full" ref={state as any}>
                     <FocusEditorViewTimelineDetails
                         detailTime={detailTime}
@@ -237,7 +252,12 @@ export default function FocusEditorView({
                 </div>
                 <div className="h-7 flex relative grow w-full py-1">
                     {/* drag component acceptor */}
-                    <DragToTimelineDrophandleComponent />
+                    <DragToTimelineDrophandleComponent
+                        setTimedlines={setTimedlines}
+                        scrollLeft={scrollLeft}
+                        width={width}
+                        timedlines={timedlines}
+                    />
 
                     {timedlines.map((item, i) => (
                         <div
@@ -276,7 +296,9 @@ export default function FocusEditorView({
                                 }}
                                 className="flex justify-center grow-[1]"
                             >
-                                <span className="text-text-400 select-none">--:--</span>
+                                <span className="text-text-400 select-none">
+                                    {item.linenumber}:--
+                                </span>
                             </div>
                             <div
                                 style={{
