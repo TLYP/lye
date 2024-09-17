@@ -96,29 +96,8 @@ export default function Page() {
     const [detailTime, setDetailTime] = useState(1000) // milliseconds
     const [zoomSize, setZoomSize] = useState(1)
     const [timedlines, setTimedlines] = useState<
-        Array<{ start: number; end: number; uhash: number }>
-    >([
-        {
-            start: 1 * 1000,
-            end: 10 * 1000,
-            uhash: 0
-        },
-        {
-            start: 11 * 1000,
-            end: 13 * 1000,
-            uhash: 0
-        },
-        {
-            start: 14 * 1000,
-            end: 16 * 1000,
-            uhash: 0
-        },
-        {
-            start: 17 * 1000,
-            end: 21 * 1000,
-            uhash: 0
-        }
-    ])
+        Array<{ start: number; end: number; linenumber: number; uhash: number }>
+    >([])
     const [timedlinessec, setTimedlinessec] = useState<Array<{ start: number; end: number }>>([])
 
     useEffect(() => {
