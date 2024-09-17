@@ -18,10 +18,9 @@ function FocusEditorViewTimelineDetails({
             {Array.from({
                 length: details
             }).map((_, i) => (
-                <>
+                <div key={i}>
                     {i % 5 == 0 ? (
                         <div
-                            key={i}
                             className="flex justify-center absolute min-w-[1px] h-0 bg-text-400 opacity-55"
                             style={{
                                 left: i * (divwidth / details) - 0.5 + 'px'
@@ -37,7 +36,6 @@ function FocusEditorViewTimelineDetails({
                         </div>
                     ) : (
                         <div
-                            key={i}
                             className="absolute flex min-w-[1px] h-0 opacity-40"
                             style={{
                                 left: i * (divwidth / details) - 0.5 + 'px'
@@ -47,7 +45,7 @@ function FocusEditorViewTimelineDetails({
                             <div className="absolute min-w-[1px] h-24 bg-text-700 opacity-10"></div>
                         </div>
                     )}
-                </>
+                </div>
             ))}
         </div>
     )

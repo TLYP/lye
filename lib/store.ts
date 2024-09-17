@@ -2,17 +2,19 @@ import { configureStore } from '@reduxjs/toolkit'
 import LyricsReducer from './lyrics'
 import MetadataReducer from './metadata'
 import SessionsReducer from './sessions'
-import TimedLines from './timedlines'
-import DragToTimeline from './local/dragToTimeline'
+import TimedLinesReducer from './timedlines'
+import DragToTimelineReducer from './local/dragToTimeline'
+import AudioPlayerReducer from './audioplayer'
 
 export const makeStore = () => {
     return configureStore({
         reducer: {
             lyrics: LyricsReducer,
             metadata: MetadataReducer,
-            timedLines: TimedLines,
+            timedLines: TimedLinesReducer,
             sessions: SessionsReducer,
-            dragToTimeline: DragToTimeline
+            dragToTimeline: DragToTimelineReducer,
+            audioPlayer: AudioPlayerReducer
         }
     })
 }
