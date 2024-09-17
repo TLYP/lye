@@ -54,7 +54,7 @@ function LyricsView({ activeLyric }: { activeLyric: Array<[number, string]> }) {
                     <DragToTimelineComponent
                         uhash={cyrb53(`${item[0]}-${item[1]}`, 0)}
                         content={item[1]}
-                        linenumber={idx+1}
+                        linenumber={idx + 1}
                         dragcontent={`${idx + 1}:${item[0]}`}
                         key={idx}
                     />
@@ -93,8 +93,8 @@ export default function Page() {
     const activeSession = useAppSelector((state) => state.sessions.activeSession)
     const everyLyrics = useAppSelector((state) => state.lyrics.lyrics)
     const [activeLyric, setActiveLyric] = useState<Array<[number, string]>>([])
-    const [detailSize, setDetailSize] = useState(1)
-    const [zoomSize, setZoomSize] = useState(1.5)
+    const [detailTime, setDetailTime] = useState(1000) // milliseconds
+    const [zoomSize, setZoomSize] = useState(1)
     const [timedlines, setTimedlines] = useState<
         Array<{ start: number; end: number; uhash: number }>
     >([
@@ -135,10 +135,10 @@ export default function Page() {
     }, [everyLyrics, activeSession])
 
     useEffect(() => {
-        if (zoomSize <= 1.5) setDetailSize(1)
-        else if (zoomSize < 2) setDetailSize(0.75)
-        else if (zoomSize < 3) setDetailSize(0.5)
-        else if (zoomSize < 4) setDetailSize(0.25)
+        if (zoomSize <= 0.75) setDetailTime(2000)
+        else if (zoomSize <= 1.5) setDetailTime(1000)
+        else if (zoomSize < 2) setDetailTime(500)
+        else if (zoomSize < 2.5) setDetailTime(250)
     }, [zoomSize])
 
     return (
@@ -149,7 +149,7 @@ export default function Page() {
 
             <TimelineComponent
                 timedlines={timedlines}
-                detailSize={detailSize}
+                detailTime={detailTime}
                 zoomSize={zoomSize}
                 setZoomSize={setZoomSize}
                 setTimedlines={setTimedlines}

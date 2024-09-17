@@ -10,10 +10,10 @@ function ToolsView({ setZoomSize }: { setZoomSize: Dispatch<SetStateAction<numbe
                     <div className="w-44">
                         <Slider
                             onChange={setZoomSize}
-                            defaultValue={2}
-                            min={1.5}
+                            defaultValue={1}
+                            min={0.15}
                             step={0.01}
-                            max={5}
+                            max={3}
                             size="xs"
                             label={null}
                             color="grey"
@@ -30,11 +30,11 @@ export default function Component({
     setTimedlines,
     setZoomSize,
     timedlines,
-    detailSize,
+    detailTime,
     zoomSize
 }: {
     timedlines: any[]
-    detailSize: number
+    detailTime: number
     zoomSize: number
     setZoomSize: Dispatch<SetStateAction<number>>
     setTimedlines: Dispatch<SetStateAction<any[]>>
@@ -48,7 +48,7 @@ export default function Component({
                 <FocusEditorView
                     setTimedlines={setTimedlines}
                     timedlines={timedlines}
-                    detailSize={detailSize}
+                    detailTime={detailTime}
                     zoomSize={zoomSize}
                 />
             </div>

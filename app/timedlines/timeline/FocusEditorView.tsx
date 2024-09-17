@@ -1,17 +1,19 @@
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react'
 import { formattedMS } from '../page'
 import { DragToTimelineDrophandleComponent } from './DragToTimelineComponent'
+import { useAppDispatch, useAppSelector } from '@/lib/hooks'
+import * as AudioPlayerActions from '@/lib/audioplayer'
 
 function FocusEditorViewTimelineDetails({
     duration,
     divwidth,
-    detailSize
+    detailTime
 }: {
     duration: number
     divwidth: number
-    detailSize: number
+    detailTime: number
 }) {
-    const details = Math.floor(duration / (1000 * detailSize))
+    const details = Math.floor(duration / detailTime)
 
     return (
         <div className="relative flex w-full">
@@ -21,28 +23,28 @@ function FocusEditorViewTimelineDetails({
                 <div key={i}>
                     {i % 5 == 0 ? (
                         <div
-                            className="flex justify-center absolute min-w-[1px] h-0 bg-text-400 opacity-55"
+                            className="flex justify-center absolute min-w-[2px] h-0 bg-text-400 opacity-55"
                             style={{
                                 left: i * (divwidth / details) - 0.5 + 'px'
                             }}
                         >
-                            <div className="absolute min-w-[1px] h-1 bg-text-400 z-50 opacity-95"></div>
-                            <div className="-top-0.5 absolute min-w-[1px] h-2  z-50 ">
+                            <div className="absolute min-w-[2px] h-1 bg-text-400 z-50 opacity-95"></div>
+                            <div className="-top-0.5 absolute min-w-[2px] h-2  z-50 ">
                                 <span className="text-xs text-text-400 select-none">
-                                    {formattedMS((i / details) * duration)}
+                                    {formattedMS(i * detailTime)}
                                 </span>
                             </div>
                             <div className="absolute min-w-[1px] h-24 bg-text-800 opacity-55"></div>
                         </div>
                     ) : (
                         <div
-                            className="absolute flex min-w-[1px] h-0 opacity-40"
+                            className="absolute flex min-w-[2px] h-0 opacity-40"
                             style={{
                                 left: i * (divwidth / details) - 0.5 + 'px'
                             }}
                         >
-                            <div className="absolute min-w-[1px] h-2 bg-text-800 z-50"></div>
-                            <div className="absolute min-w-[1px] h-24 bg-text-700 opacity-10"></div>
+                            <div className="absolute min-w-[2px] h-2 bg-text-800 z-50"></div>
+                            <div className="absolute min-w-[2px] h-24 bg-text-700 opacity-20"></div>
                         </div>
                     )}
                 </div>
@@ -54,19 +56,21 @@ function FocusEditorViewTimelineDetails({
 export default function FocusEditorView({
     setTimedlines,
     timedlines,
-    detailSize,
-    zoomSize
+    zoomSize,
+    detailTime
 }: {
     timedlines: Array<{ start: number; end: number; uhash: number }>
-    detailSize: number
     zoomSize: number
+    detailTime: number
     setTimedlines: Dispatch<SetStateAction<Array<any>>>
 }) {
     const state = useRef<HTMLDivElement>()
     const rootDiv = useRef<HTMLDivElement>()
+    const duration = useAppSelector((state) =>
+        Math.floor((state.audioPlayer.audio?.duration ?? 0) * 1000)
+    )
     const [width, setWidth] = useState(0)
     const [defaultWidth, setDefaultWidth] = useState(0)
-    const [duration, _] = useState(60 * 1000)
     const [activityTarget, setActivityTarget] = useState<number | null>(null)
     const [activityInitialOffset, setActivityInitialOffset] = useState<number>(0)
     const [mouseActivity, setMouseActivity] = useState<
@@ -75,8 +79,11 @@ export default function FocusEditorView({
 
     useEffect(() => {
         if (!state.current) return
-        setWidth(state.current.getBoundingClientRect().width)
-    }, [state, defaultWidth, zoomSize])
+        const pxBetweenDetails = 50
+        const w = Math.floor(duration / 1000) * (pxBetweenDetails * zoomSize)
+
+        setWidth(w)
+    }, [duration, state, defaultWidth, zoomSize])
 
     useEffect(() => {
         if (!rootDiv.current) return
@@ -219,16 +226,13 @@ export default function FocusEditorView({
             ref={rootDiv as any}
             className="flex overflow-y-hidden overflow-x-scroll flex-col grow bg-background-800 bg-gradient-to-b from-background-950 to-45% to-background-900"
         >
-            <div
-                className="flex flex-col grow relative"
-                style={{ width: zoomSize * defaultWidth + 'px' }}
-            >
+            <div className="flex flex-col grow relative" style={{ width: width + 'px' }}>
                 <div className="left-[900px] top-0 w-[2px] h-full bg-text-800 opacity-85 absolute z-50"></div>
                 <div className="flex justify-between h-4 w-full" ref={state as any}>
                     <FocusEditorViewTimelineDetails
+                        detailTime={detailTime}
                         duration={duration}
                         divwidth={width}
-                        detailSize={detailSize}
                     />
                 </div>
                 <div className="h-7 flex relative grow w-full py-1">
