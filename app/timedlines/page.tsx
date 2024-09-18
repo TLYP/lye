@@ -5,7 +5,8 @@ import * as TimedlinesActions from '@/lib/timedlines'
 import { useAppSelector, useAppDispatch } from '@/lib/hooks'
 import { useState, useEffect } from 'react'
 import { cyrb53 } from '@/app/cachedb/index'
-import { Session } from '../cachedb/sessions'
+import { Session, SessionReference } from '../cachedb/sessions'
+import { TimedLinesReferenceLine } from '../cachedb/timedlines'
 
 export function formattedMS(milliseconds?: number) {
     if (!milliseconds) return '--:--.---'
@@ -24,8 +25,30 @@ export function formattedMS(milliseconds?: number) {
 }
 
 function LyricsView({ activeLyric }: { activeLyric: Array<[number, string]> }) {
+    const activeSession = useAppSelector((state) => state.sessions.activeSession)
+    const [session, setSession] = useState<null | SessionReference>(null)
     const timedlines = useAppSelector((state) => state.timedlines)
     const dispatch = useAppDispatch()
+
+    useEffect(() => {
+        if (activeSession == null) return
+        ;(async () => {
+            setSession(await Session.get(activeSession.uuid))
+        })()
+    }, [activeSession])
+
+    useEffect(() => {
+        if (!session) return
+        session.timedlines.primary.lines = timedlines.primary.map(
+            (data) => new TimedLinesReferenceLine(data)
+        )
+
+        session.timedlines.secondary.lines = timedlines.secondary.map(
+            (data) => new TimedLinesReferenceLine(data)
+        )
+
+        session.timedlines.update()
+    }, [timedlines])
 
     useEffect(() => {
         const uhashMap = new Map(

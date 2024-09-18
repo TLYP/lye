@@ -1,9 +1,10 @@
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { formattedMS } from '../page'
 import { DragToTimelineDrophandleComponent } from './DragToTimelineComponent'
 import { useAppDispatch, useAppSelector } from '@/lib/hooks'
-import * as AudioPlayerActions from '@/lib/audioplayer'
 import * as TimedlinesActions from '@/lib/timedlines'
+import { Session, SessionReference } from '@/app/cachedb/sessions'
+import { TimedLinesReferenceLine } from '@/app/cachedb/timedlines'
 
 function FocusEditorViewTimelineDetails({
     duration,
@@ -61,6 +62,8 @@ export default function FocusEditorView({
     zoomSize: number
     detailTime: number
 }) {
+    const activeSession = useAppSelector((state) => state.sessions.activeSession)
+    const [session, setSession] = useState<null | SessionReference>(null)
     const dispatch = useAppDispatch()
     const state = useRef<HTMLDivElement>()
     const rootDiv = useRef<HTMLDivElement>()
@@ -102,6 +105,13 @@ export default function FocusEditorView({
             content
         }
     }
+
+    useEffect(() => {
+        if (activeSession == null) return
+        ;(async () => {
+            setSession(await Session.get(activeSession.uuid))
+        })()
+    }, [activeSession])
 
     useEffect(() => {
         if (!state.current) return
@@ -165,7 +175,7 @@ export default function FocusEditorView({
         return item
     }
 
-    const movingTarget = (x: number, y: number) => {
+    const movingTarget = async (x: number, y: number) => {
         if (activityTarget == null) return
         document.body.style.setProperty('cursor', 'move', 'important')
 
@@ -307,6 +317,18 @@ export default function FocusEditorView({
             setMouseActivity('inactive')
             setActivityInitialOffset(0)
             document.body.style.removeProperty('cursor')
+
+            if (session == null) return
+
+            session.timedlines.primary.lines = timedlines.primary.map(
+                (data) => new TimedLinesReferenceLine(data)
+            )
+
+            session.timedlines.secondary.lines = timedlines.secondary.map(
+                (data) => new TimedLinesReferenceLine(data)
+            )
+
+            session.timedlines.update()
         }
 
         document.addEventListener('mousemove', mousemoveListener)
