@@ -185,24 +185,6 @@ export default function FocusEditorView({
 
         item = adjustStartAndEnd(item, d, target)
 
-        /*
-        if (
-            timedlines[target][index - 1] != undefined &&
-            item.start <= timedlines[target][index - 1].end
-        ) {
-            item.start = timedlines[target][index - 1].end
-            item.end = item.start + d
-        }
-
-        if (
-            timedlines[target][index + 1] != undefined &&
-            item.end >= timedlines[target][index + 1].start
-        ) {
-            item.end = timedlines[target][index + 1].start
-            item.start = item.end - d
-        }
-            */
-
         const bodyHeight = document.body.getBoundingClientRect().height
 
         if (y >= bodyHeight - 34 && target !== 'secondary') {
