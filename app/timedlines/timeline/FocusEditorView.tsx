@@ -173,7 +173,7 @@ export default function FocusEditorView({
         if (result == undefined) return
 
         let item = { ...result.content }
-        const { index, target } = result
+        const { target } = result
 
         const d = item.end - item.start
         item.start = f(x)
@@ -208,12 +208,16 @@ export default function FocusEditorView({
         if (y >= bodyHeight - 34 && target !== 'secondary') {
             dispatch(TimedlinesActions.remove(['primary', { uhash: item.uhash }]))
 
+            item.start = f(x)
+            item.end = f(g(d) + x)
             item = adjustStartAndEnd(item, d, 'secondary')
             dispatch(TimedlinesActions.add(['secondary', item]))
             return
         } else if (y <= bodyHeight - 34 && target !== 'primary') {
             dispatch(TimedlinesActions.remove(['secondary', { uhash: item.uhash }]))
 
+            item.start = f(x)
+            item.end = f(g(d) + x)
             item = adjustStartAndEnd(item, d, 'primary')
             dispatch(TimedlinesActions.add(['primary', item]))
             return
