@@ -5,6 +5,7 @@ import * as TimedlinesActions from '@/lib/timedlines'
 import { useAppSelector, useAppDispatch } from '@/lib/hooks'
 import { useState, useEffect } from 'react'
 import { cyrb53 } from '@/app/cachedb/index'
+import { Session } from '../cachedb/sessions'
 
 export function formattedMS(milliseconds?: number) {
     if (!milliseconds) return '--:--.---'
@@ -38,13 +39,13 @@ function LyricsView({ activeLyric }: { activeLyric: Array<[number, string]> }) {
                         uhashMap.get(item.uhash) !== undefined &&
                         uhashMap.get(item.uhash) !== item.displayLineNumber
                 )
-                .map((item) => ({ ...item, displayLineNumber: uhashMap.get(item.uhash) }))
+                .map((item) => ({
+                    ...item,
+                    displayLineNumber: uhashMap.get(item.uhash) ?? item.linenumber
+                }))
                 .forEach((item) =>
                     dispatch(
-                        TimedlinesActions.update([
-                            target,
-                            { uhash: item.uhash, content: item }
-                        ])
+                        TimedlinesActions.update([target, { uhash: item.uhash, content: item }])
                     )
                 )
         )
@@ -54,6 +55,10 @@ function LyricsView({ activeLyric }: { activeLyric: Array<[number, string]> }) {
         timedlines.primary.findIndex((item) => item.uhash == uhash) !== -1 ||
         timedlines.secondary.findIndex((item) => item.uhash == uhash) !== -1
 
+    const getTimedline = (uhash: number) =>
+        timedlines.primary.find((item) => item.uhash == uhash) ||
+        timedlines.secondary.find((item) => item.uhash == uhash)
+
     return (
         <>
             <div className="rounded bg-background-900">
@@ -61,9 +66,7 @@ function LyricsView({ activeLyric }: { activeLyric: Array<[number, string]> }) {
                     <div
                         className="border-background-950 w-[44px] border-y-[1px] flex cursor-default"
                         style={{
-                            backgroundColor: lineInTimeline(cyrb53(`${item[0]}-${item[1]}`))
-                                ? 'var(--background-800)'
-                                : ''
+                            opacity: lineInTimeline(cyrb53(`${item[0]}-${item[1]}`)) ? '1' : '1'
                         }}
                         key={idx}
                     >
@@ -77,11 +80,13 @@ function LyricsView({ activeLyric }: { activeLyric: Array<[number, string]> }) {
             <div className="rounded bg-background-900">
                 {activeLyric.map((i, idx) => (
                     <div
-                        className="border-background-950 border-y-[1px] flex w-full cursor-default"
+                        className="border-background-950 border-y-[1px] flex w-28 cursor-default"
                         key={idx}
                     >
-                        <div className="p-2 px-4 h-[44px] ">
-                            <span className="text-text-300 select-none">{formattedMS()}</span>
+                        <div className="text-center p-2 px-4 w-full h-[44px] ">
+                            <span className="text-text-300 select-none">
+                                {formattedMS(getTimedline(cyrb53(`${i[0]}-${i[1]}`))?.start)}
+                            </span>
                         </div>
                     </div>
                 ))}
@@ -98,13 +103,15 @@ function LyricsView({ activeLyric }: { activeLyric: Array<[number, string]> }) {
                 ))}
             </div>
             <div className="rounded bg-background-900">
-                {activeLyric.map((_, idx) => (
+                {activeLyric.map((i, idx) => (
                     <div
-                        className="border-background-950 border-y-[1px] flex w-full cursor-default"
+                        className="border-background-950 border-y-[1px] flex w-28 cursor-default"
                         key={idx}
                     >
-                        <div className="p-2 h-[44px] px-4">
-                            <span className="text-text-300 select-none">{formattedMS()}</span>
+                        <div className="text-center p-2 w-full h-[44px] px-4">
+                            <span className="text-text-300 select-none">
+                                {formattedMS(getTimedline(cyrb53(`${i[0]}-${i[1]}`))?.end)}
+                            </span>
                         </div>
                     </div>
                 ))}
@@ -129,6 +136,7 @@ function LyricsView({ activeLyric }: { activeLyric: Array<[number, string]> }) {
 export default function Page() {
     const activeSession = useAppSelector((state) => state.sessions.activeSession)
     const everyLyrics = useAppSelector((state) => state.lyrics.lyrics)
+    const dispatch = useAppDispatch()
     const [activeLyric, setActiveLyric] = useState<Array<[number, string]>>([])
     const [detailTime, setDetailTime] = useState(1000) // milliseconds
     const [zoomSize, setZoomSize] = useState(1)
@@ -144,6 +152,14 @@ export default function Page() {
         data = data.filter((item) => !(item[1].trim() === ''))
 
         setActiveLyric(data as any)
+        ;(async () => {
+            if (activeSession === null) return
+
+            const session = await Session.get(activeSession.uuid)
+            const timedlines = session.timedlines.serialize().timelines
+
+            dispatch(TimedlinesActions.loadAll(timedlines))
+        })()
     }, [everyLyrics, activeSession])
 
     useEffect(() => {

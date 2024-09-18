@@ -327,7 +327,10 @@ export default function Component({ close, opened }: { opened: boolean; close: (
         }).save()
 
         const timedlines = await CacheTimedLines.from({
-            lines: []
+            timelines: {
+                primary: [],
+                secondary: []
+            }
         }).save()
 
         const session = await Session.from({

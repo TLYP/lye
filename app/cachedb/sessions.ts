@@ -1,6 +1,7 @@
 import { getDatabase } from '.'
 import { File, FileReference } from './file'
 import { Lyric, LyricReference } from './lyrics'
+import { TimedLines, TimedLinesReference } from './timedlines'
 
 const TABLE_NAME = 'sessions'
 
@@ -18,6 +19,7 @@ export type SessionData = {
 export type SessionDataRefs = {
     file: FileReference
     lyric: LyricReference
+    timedlines: TimedLinesReference
 }
 
 export class Session {
@@ -29,8 +31,9 @@ export class Session {
 
         const file = await File.get(this.data.fileRef)
         const lyric = await Lyric.get(this.data.lyricRef)
+        const timedlines = await TimedLines.get(this.data.timedlinesRef)
 
-        return new SessionReference(this.data, { file, lyric }, db)
+        return new SessionReference(this.data, { file, lyric, timedlines }, db)
     }
 
     // statics
@@ -43,7 +46,8 @@ export class Session {
             data,
             {
                 file: await File.get(data.fileRef),
-                lyric: await Lyric.get(data.lyricRef)
+                lyric: await Lyric.get(data.lyricRef),
+                timedlines: await TimedLines.get(data.timedlinesRef)
             },
             db
         )
@@ -100,6 +104,10 @@ export class SessionReference {
 
     public get lyric() {
         return this.refs['lyric']
+    }
+
+    public get timedlines() {
+        return this.refs['timedlines']
     }
 
     public get name() {

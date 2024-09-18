@@ -164,6 +164,15 @@ export default function Component({
         timedlines.primary.findIndex((item) => item.uhash == uhash) !== -1 ||
         timedlines.secondary.findIndex((item) => item.uhash == uhash) !== -1
 
+    const lineInTimelineTarget = (uhash: number) => {
+        const pm = timedlines.primary.findIndex((item) => item.uhash == uhash) !== -1
+        const sc = timedlines.secondary.findIndex((item) => item.uhash == uhash) !== -1
+
+        if (pm) return 'primary'
+        else if (sc) return 'secondary'
+        return undefined
+    }
+
     const moveElementToMouse = (e: MouseEvent) => {
         if (draggablyElementRef.current == null) return
 
@@ -211,29 +220,33 @@ export default function Component({
         }
     })
     return (
-        <div
-            onMouseDown={(e) => {
-                if (lineInTimeline(uhash)) return
-                setAction('holding')
-                moveElementToMouse(e as unknown as MouseEvent)
-            }}
-            className="border-background-950 border-y-[1px] flex w-full cursor-pointer"
-            style={{
-                cursor: lineInTimeline(uhash) ? 'cursor' : 'default',
-                backgroundColor: lineInTimeline(uhash) ? 'var(--background-950)' : ''
-            }}
-        >
+        <div>
             <div
                 ref={draggablyElementRef}
                 id={String(uhash)}
                 data-linenumber={linenumber}
-                className="w-32 z-10 justify-center border-background-950 border-[1px] items-center rounded-sm absolute bg-background-800 px-3 py-2"
+                className="w-32 opacity-50 z-[999] justify-center border-background-950 border-[1px] items-center rounded-sm absolute bg-background-800 px-3 py-2"
                 style={{ display: action == 'moving' ? 'flex' : 'none' }}
             >
                 <span className="select-none text-xs text-text-300">{dragcontent}</span>
             </div>
-            <div className="p-2 px-4">
-                <span className="text-xl text-text-300 select-none">{content}</span>
+
+            <div
+                onMouseDown={(e) => {
+                    if (lineInTimeline(uhash)) return
+                    setAction('holding')
+                    moveElementToMouse(e as unknown as MouseEvent)
+                }}
+                className="border-background-950 border-y-[1px] flex w-full cursor-pointer"
+                style={{
+                    cursor: lineInTimeline(uhash) ? 'cursor' : 'default',
+                    opacity: lineInTimeline(uhash) ? '1' : '0.3'
+                    // paddingLeft: lineInTimelineTarget(uhash) == 'secondary' ? '1rem' : ''
+                }}
+            >
+                <div className="p-2 px-4">
+                    <span className="text-xl text-text-300 select-none">{content}</span>
+                </div>
             </div>
         </div>
     )

@@ -1,20 +1,16 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import {
+    TimedLinesLine,
+    TimelineTarget,
+    TimedLines,
+    TimedLinesReferenceTimeline,
+    TimedLinesReferenceLine
+} from '@/app/cachedb/timedlines'
+import { Session, SessionReference } from '@/app/cachedb/sessions'
+export { TimelineTarget }
 
-export const TimelineTarget = {
-    PRIMARY: 'primary',
-    SECONDARY: 'secondary'
-} as const
+export type TimelineItemState = TimedLinesLine
 
-export type TimelineTarget = (typeof TimelineTarget)[keyof typeof TimelineTarget]
-
-export type TimelineItemState = {
-    // the U hash or Unique Hash is a hash created by a string which combines `{lineNumber}-{lineContent}`
-    uhash: number
-    linenumber: number
-    displayLineNumber?: number
-    start: number
-    end: number
-}
 export type TimelineState = Array<TimelineItemState>
 
 export type TimedLinesState = {
@@ -31,7 +27,25 @@ export const TimedLinesSlice = createSlice({
     name: 'timedlines',
     initialState,
     reducers: {
+        loadAll(
+            state,
+            action: PayloadAction<{ primary: TimelineState; secondary: TimelineState }>
+        ) {
+            state.primary = action.payload.primary
+            state.secondary = action.payload.secondary
+        },
+
         add(state, action: PayloadAction<[TimelineTarget, TimelineItemState]>) {
+            Session.getActiveSession().then(async (active) => {
+                if (!active) return
+
+                const timedlines = active.timedlines
+
+                timedlines[action.payload[0]].addLine(action.payload[1])
+
+                await timedlines.update()
+            })
+
             state[action.payload[0]].push(action.payload[1])
         },
 
@@ -43,10 +57,36 @@ export const TimedLinesSlice = createSlice({
                 (item) => item.uhash == action.payload[1].uhash
             )
 
+            Session.getActiveSession().then(async (active) => {
+                if (!active) return
+
+                const timedlines = active.timedlines
+                const t = action.payload[0]
+                const lineIndex = timedlines[t].lines.findIndex(
+                    (item) => item.uhash === action.payload[1].uhash
+                )
+                timedlines[t].lines[lineIndex].set(action.payload[1].content)
+
+                await timedlines.update()
+            })
+
             state[action.payload[0]][idx] = action.payload[1].content
         },
 
         remove(state, action: PayloadAction<[TimelineTarget, { uhash: number }]>) {
+            Session.getActiveSession().then(async (active) => {
+                if (!active) return
+
+                const timedlines = active.timedlines
+                const t = action.payload[0]
+
+                timedlines[t].lines = timedlines[t].lines.filter(
+                    (item) => item.uhash !== action.payload[1].uhash
+                )
+
+                await timedlines.update()
+            })
+
             state[action.payload[0]] = state[action.payload[0]].filter(
                 (item) => item.uhash !== action.payload[1].uhash
             )
@@ -54,5 +94,5 @@ export const TimedLinesSlice = createSlice({
     }
 })
 
-export const { add, update, remove } = TimedLinesSlice.actions
+export const { add, update, remove, loadAll } = TimedLinesSlice.actions
 export default TimedLinesSlice.reducer
