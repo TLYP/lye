@@ -124,14 +124,55 @@ export default function FocusEditorView({
         }
     }, [rootDiv])
 
-    const movingTarget = (x: number) => {
+    const findNearestRight = (linenumber: number, target: TimedlinesActions.TimelineTarget) =>
+        timedlines[target]
+            .filter((item) => item.linenumber > linenumber)
+            .map((item) => ({
+                val: Math.abs(item.linenumber - linenumber),
+                item
+            }))
+            .sort((i1, i2) => i2.val - i1.val)
+            .pop()?.item
+
+    const findNearestLeft = (linenumber: number, target: TimedlinesActions.TimelineTarget) =>
+        timedlines[target]
+            .filter((item) => item.linenumber < linenumber)
+            .map((item) => ({
+                val: Math.abs(item.linenumber - linenumber),
+                item
+            }))
+            .sort((i1, i2) => i2.val - i1.val)
+            .pop()?.item
+
+    const adjustStartAndEnd = (
+        item: TimedlinesActions.TimelineItemState,
+        width: number,
+        target: TimedlinesActions.TimelineTarget
+    ) => {
+        const leftItem = findNearestLeft(item.linenumber, target)
+        const rightItem = findNearestRight(item.linenumber, target)
+
+        if (leftItem && item.start <= leftItem.end) {
+            item.start = leftItem.end
+            item.end = item.start + width
+        }
+
+        if (rightItem != undefined && item.end >= rightItem.start) {
+            item.end = rightItem.start
+            item.start = item.end - width
+        }
+
+        return item
+    }
+
+    const movingTarget = (x: number, y: number) => {
         if (activityTarget == null) return
         document.body.style.setProperty('cursor', 'move', 'important')
 
         const result = getTimedline(activityTarget)
         if (result == undefined) return
 
-        const item = { ...result.content }
+        let item = { ...result.content }
         const { index, target } = result
 
         const d = item.end - item.start
@@ -142,6 +183,9 @@ export default function FocusEditorView({
             item.start = item.end - d
         }
 
+        item = adjustStartAndEnd(item, d, target)
+
+        /*
         if (
             timedlines[target][index - 1] != undefined &&
             item.start <= timedlines[target][index - 1].end
@@ -157,9 +201,26 @@ export default function FocusEditorView({
             item.end = timedlines[target][index + 1].start
             item.start = item.end - d
         }
+            */
+
+        const bodyHeight = document.body.getBoundingClientRect().height
+
+        if (y >= bodyHeight - 34 && target !== 'secondary') {
+            dispatch(TimedlinesActions.remove(['primary', { uhash: item.uhash }]))
+
+            item = adjustStartAndEnd(item, d, 'secondary')
+            dispatch(TimedlinesActions.add(['secondary', item]))
+            return
+        } else if (y <= bodyHeight - 34 && target !== 'primary') {
+            dispatch(TimedlinesActions.remove(['secondary', { uhash: item.uhash }]))
+
+            item = adjustStartAndEnd(item, d, 'primary')
+            dispatch(TimedlinesActions.add(['primary', item]))
+            return
+        }
 
         dispatch(
-            TimedlinesActions.updateByUhash([
+            TimedlinesActions.update([
                 target,
                 {
                     uhash: item.uhash,
@@ -193,7 +254,7 @@ export default function FocusEditorView({
         }
 
         dispatch(
-            TimedlinesActions.updateByUhash([
+            TimedlinesActions.update([
                 target,
                 {
                     uhash: item.uhash,
@@ -231,7 +292,7 @@ export default function FocusEditorView({
         }
 
         dispatch(
-            TimedlinesActions.updateByUhash([
+            TimedlinesActions.update([
                 target,
                 {
                     uhash: item.uhash,
@@ -248,7 +309,7 @@ export default function FocusEditorView({
         let x = e.clientX - Xoffset - activityInitialOffset + scrollLeft
         if (x < 0) x = 0
 
-        if (mouseActivity == 'moving') movingTarget(x)
+        if (mouseActivity == 'moving') movingTarget(x, e.clientY)
         else if (mouseActivity == 'resizeleft') resizeLeft(x)
         else if (mouseActivity == 'resizeright') resizeRight(x)
     }

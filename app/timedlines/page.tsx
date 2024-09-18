@@ -41,7 +41,7 @@ function LyricsView({ activeLyric }: { activeLyric: Array<[number, string]> }) {
                 .map((item) => ({ ...item, displayLineNumber: uhashMap.get(item.uhash) }))
                 .forEach((item) =>
                     dispatch(
-                        TimedlinesActions.updateByUhash([
+                        TimedlinesActions.update([
                             target,
                             { uhash: item.uhash, content: item }
                         ])

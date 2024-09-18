@@ -37,13 +37,6 @@ export const TimedLinesSlice = createSlice({
 
         update(
             state,
-            action: PayloadAction<[TimelineTarget, { index: number; content: TimelineItemState }]>
-        ) {
-            state[action.payload[0]][action.payload[1].index] = action.payload[1].content
-        },
-
-        updateByUhash(
-            state,
             action: PayloadAction<[TimelineTarget, { uhash: number; content: TimelineItemState }]>
         ) {
             const idx = state[action.payload[0]].findIndex(
@@ -53,13 +46,13 @@ export const TimedLinesSlice = createSlice({
             state[action.payload[0]][idx] = action.payload[1].content
         },
 
-        remove(state, action: PayloadAction<[TimelineTarget, { index: number }]>) {
+        remove(state, action: PayloadAction<[TimelineTarget, { uhash: number }]>) {
             state[action.payload[0]] = state[action.payload[0]].filter(
-                (_, i) => i !== action.payload[1].index
+                (item) => item.uhash !== action.payload[1].uhash
             )
         }
     }
 })
 
-export const {add, update, updateByUhash, remove} = TimedLinesSlice.actions
+export const { add, update, remove } = TimedLinesSlice.actions
 export default TimedLinesSlice.reducer
