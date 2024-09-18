@@ -54,15 +54,11 @@ function FocusEditorViewTimelineDetails({
 }
 
 export default function FocusEditorView({
-    setTimedlines,
-    timedlines,
     zoomSize,
     detailTime
 }: {
-    timedlines: Array<{ start: number; end: number; linenumber: number; uhash: number }>
     zoomSize: number
     detailTime: number
-    setTimedlines: Dispatch<SetStateAction<Array<any>>>
 }) {
     const state = useRef<HTMLDivElement>()
     const rootDiv = useRef<HTMLDivElement>()
@@ -73,6 +69,7 @@ export default function FocusEditorView({
         Math.floor((state.audioPlayer.audio?.currentTime ?? 0) * 1000)
     )
 
+    const timedlines = useAppSelector((state) => state.timedlines)
     const [width, setWidth] = useState(0)
     const [defaultWidth, setDefaultWidth] = useState(0)
     const [activityTarget, setActivityTarget] = useState<number | null>(null)
@@ -107,6 +104,8 @@ export default function FocusEditorView({
         if (activityTarget == null) return
         document.body.style.setProperty('cursor', 'move', 'important')
 
+        /*
+
         setTimedlines(
             timedlines.map((item, i) => {
                 if (i != activityTarget) return item
@@ -135,13 +134,14 @@ export default function FocusEditorView({
 
                 return item
             })
-        )
+        ) */
     }
 
     const resizeLeft = (x: number) => {
         if (activityTarget == null) return
         document.body.style.setProperty('cursor', 'w-resize', 'important')
 
+        /*
         setTimedlines(
             timedlines.map((item, i) => {
                 if (i != activityTarget) return item
@@ -161,12 +161,13 @@ export default function FocusEditorView({
                 return item
             })
         )
+            */
     }
 
     const resizeRight = (x: number) => {
         if (activityTarget == null) return
         document.body.style.setProperty('cursor', 'e-resize', 'important')
-
+        /*
         setTimedlines(
             timedlines.map((item, i) => {
                 if (i != activityTarget) return item
@@ -190,6 +191,7 @@ export default function FocusEditorView({
                 return item
             })
         )
+            */
     }
 
     const handleMouseActivity = (e: MouseEvent) => {
@@ -241,7 +243,7 @@ export default function FocusEditorView({
         >
             <div className="flex flex-col grow relative" style={{ width: width + 'px' }}>
                 <div
-                    style={{ left: (currentTime / duration) * width }}
+                    style={{ left: Math.floor((currentTime / duration) * width) + 'px' }}
                     className="top-0 min-w-1 h-full bg-text-800 opacity-85 absolute z-50"
                 ></div>
                 <div className="flex justify-between h-4 w-full" ref={state as any}>
@@ -254,13 +256,12 @@ export default function FocusEditorView({
                 <div className="h-7 flex relative grow w-full py-1">
                     {/* drag component acceptor */}
                     <DragToTimelineDrophandleComponent
-                        setTimedlines={setTimedlines}
+                        timedlineTarget={'primary'}
                         scrollLeft={scrollLeft}
                         width={width}
-                        timedlines={timedlines}
                     />
 
-                    {timedlines.map((item, i) => (
+                    {timedlines.primary.map((item, i) => (
                         <div
                             key={i}
                             id={`detail-item-${i}`}
@@ -297,7 +298,9 @@ export default function FocusEditorView({
                                 }}
                                 className="flex justify-center grow-[1]"
                             >
-                                <span className="text-text-400 select-none">{item.linenumber}</span>
+                                <span className="text-text-400 select-none">
+                                    {item.displayLineNumber}
+                                </span>
                             </div>
                             <div
                                 style={{
@@ -315,7 +318,70 @@ export default function FocusEditorView({
                         </div>
                     ))}
                 </div>
-                <div className="h-7 flex relative grow w-full py-1"></div>
+                <div className="h-7 flex relative grow w-full py-1">
+                    <DragToTimelineDrophandleComponent
+                        timedlineTarget={'secondary'}
+                        scrollLeft={scrollLeft}
+                        width={width}
+                    />
+
+                    {timedlines.secondary.map((item, i) => (
+                        <div
+                            key={i}
+                            id={`detail-item-${i}`}
+                            className="border-text-800 border-[1px] absolute rounded flex justify-center items-center bg-background-800 h-8"
+                            style={{
+                                width: ((item.end - item.start) / duration) * width + 'px',
+                                left: (item.start / duration) * width + 'px'
+                            }}
+                        >
+                            <div
+                                style={{
+                                    cursor:
+                                        mouseActivity == 'inactive' || activityTarget == i
+                                            ? 'w-resize'
+                                            : ''
+                                }}
+                                onMouseDown={(e) => {
+                                    setActivityTarget(i)
+                                    setMouseActivity('resizeleft')
+                                }}
+                                className="left-0 absolute w-2 h-full"
+                            ></div>
+                            <div
+                                style={{
+                                    cursor:
+                                        mouseActivity == 'inactive' || activityTarget == i
+                                            ? 'move'
+                                            : ''
+                                }}
+                                onMouseDown={(e) => {
+                                    setActivityTarget(i)
+                                    setMouseActivity('moving')
+                                    findActivityOffset(i, e.clientX)
+                                }}
+                                className="flex justify-center grow-[1]"
+                            >
+                                <span className="text-text-400 select-none">
+                                    {item.displayLineNumber}
+                                </span>
+                            </div>
+                            <div
+                                style={{
+                                    cursor:
+                                        mouseActivity == 'inactive' || activityTarget == i
+                                            ? 'e-resize'
+                                            : ''
+                                }}
+                                onMouseDown={(e) => {
+                                    setActivityTarget(i)
+                                    setMouseActivity('resizeright')
+                                }}
+                                className="right-0 absolute w-2 h-full"
+                            ></div>
+                        </div>
+                    ))}
+                </div>
             </div>
         </div>
     )

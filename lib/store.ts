@@ -11,7 +11,7 @@ export const makeStore = () => {
         reducer: {
             lyrics: LyricsReducer,
             metadata: MetadataReducer,
-            timedLines: TimedLinesReducer,
+            timedlines: TimedLinesReducer,
             sessions: SessionsReducer,
             dragToTimeline: DragToTimelineReducer,
             audioPlayer: AudioPlayerReducer
