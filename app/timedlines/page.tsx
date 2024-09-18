@@ -21,13 +21,25 @@ export function formattedMS(milliseconds?: number) {
     }${fms}`
 }
 
-function LyricsView({ activeLyric }: { activeLyric: Array<[number, string]> }) {
+function LyricsView({
+    activeLyric,
+    timedlines
+}: {
+    activeLyric: Array<[number, string]>
+    timedlines: Array<{ start: number; end: number; linenumber: number; uhash: number }>
+}) {
     return (
         <>
             <div className="rounded bg-background-900">
                 {activeLyric.map((_, idx) => (
                     <div
                         className="border-background-950 w-[44px] border-y-[1px] flex cursor-default"
+                        style={{
+                            backgroundColor:
+                                timedlines.findIndex((it) => it.linenumber == idx + 1) !== -1
+                                    ? 'var(--background-800)'
+                                    : ''
+                        }}
                         key={idx}
                     >
                         <div className="flex items-center justify-center p-2 px-4 h-[44px] w-full">
@@ -52,6 +64,7 @@ function LyricsView({ activeLyric }: { activeLyric: Array<[number, string]> }) {
             <div className="rounded bg-background-900">
                 {activeLyric.map((item, idx) => (
                     <DragToTimelineComponent
+                        timedlines={timedlines}
                         uhash={cyrb53(`${item[0]}-${item[1]}`, 0)}
                         content={item[1]}
                         linenumber={idx + 1}
@@ -123,7 +136,7 @@ export default function Page() {
     return (
         <div className="flex flex-col items-center gap-4 pb-52 bg-background-base w-screen h-full py-6 overflow-y-auto overflow-x-hidden">
             <div className="flex gap-1">
-                <LyricsView activeLyric={activeLyric} />
+                <LyricsView timedlines={timedlines} activeLyric={activeLyric} />
             </div>
 
             <TimelineComponent

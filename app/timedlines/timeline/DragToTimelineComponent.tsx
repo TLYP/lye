@@ -194,12 +194,14 @@ export default function Component({
     content,
     dragcontent,
     linenumber,
-    uhash
+    uhash,
+    timedlines
 }: {
     content: string
     dragcontent: string
     linenumber: number
     uhash: number
+    timedlines: Array<{ start: number; end: number; linenumber: number; uhash: number }>
 }) {
     const [action, setAction] = useState<'holding' | 'moving' | null>(null)
     const draggablyElementRef = useRef<HTMLDivElement>(null)
@@ -255,10 +257,24 @@ export default function Component({
     return (
         <div
             onMouseDown={(e) => {
+                const intimedlines =
+                    timedlines.findIndex((it) => it.linenumber == linenumber) !== -1
+
+                if (intimedlines) return
                 setAction('holding')
                 moveElementToMouse(e as unknown as MouseEvent)
             }}
-            className="border-background-950 border-y-[1px] flex w-full cursor-pointer hover:bg-background-800"
+            className="border-background-950 border-y-[1px] flex w-full cursor-pointer"
+            style={{
+                cursor:
+                    timedlines.findIndex((it) => it.linenumber == linenumber) === -1
+                        ? 'cursor'
+                        : 'default',
+                backgroundColor:
+                    timedlines.findIndex((it) => it.linenumber == linenumber) === -1
+                        ? 'var(--background-950)'
+                        : ''
+            }}
         >
             <div
                 ref={draggablyElementRef}

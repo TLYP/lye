@@ -95,10 +95,11 @@ export default function FocusEditorView({
         setDefaultWidth(rootDiv.current.getBoundingClientRect().width)
 
         const handleScroll = () => setScrollLeft(rootDiv.current!.scrollLeft)
-        rootDiv.current.addEventListener('scroll', handleScroll)
+        let element = rootDiv.current
+        element.addEventListener('scroll', handleScroll)
 
         return () => {
-            rootDiv.current?.removeEventListener('scroll', handleScroll)
+            element.removeEventListener('scroll', handleScroll)
         }
     }, [rootDiv])
 
@@ -296,9 +297,7 @@ export default function FocusEditorView({
                                 }}
                                 className="flex justify-center grow-[1]"
                             >
-                                <span className="text-text-400 select-none">
-                                    {item.linenumber}:--
-                                </span>
+                                <span className="text-text-400 select-none">{item.linenumber}</span>
                             </div>
                             <div
                                 style={{
