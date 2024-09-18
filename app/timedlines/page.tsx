@@ -3,7 +3,7 @@ import TimelineComponent from './timeline/Component'
 import DragToTimelineComponent from './timeline/DragToTimelineComponent'
 import * as TimedlinesActions from '@/lib/timedlines'
 import { useAppSelector, useAppDispatch } from '@/lib/hooks'
-import { useState, useEffect, useRef, SetStateAction, Dispatch } from 'react'
+import { useState, useEffect } from 'react'
 import { cyrb53 } from '@/app/cachedb/index'
 
 export function formattedMS(milliseconds?: number) {
@@ -128,15 +128,10 @@ function LyricsView({ activeLyric }: { activeLyric: Array<[number, string]> }) {
 
 export default function Page() {
     const activeSession = useAppSelector((state) => state.sessions.activeSession)
-    // const timedlines = useAppSelector((state) => state.timedLines)
     const everyLyrics = useAppSelector((state) => state.lyrics.lyrics)
     const [activeLyric, setActiveLyric] = useState<Array<[number, string]>>([])
     const [detailTime, setDetailTime] = useState(1000) // milliseconds
     const [zoomSize, setZoomSize] = useState(1)
-    // const [timedlines, setTimedlines] = useState<
-    //     Array<{ start: number; end: number; linenumber: number; uhash: number }>
-    // >([])
-    // const [timedlinessec, setTimedlinessec] = useState<Array<{ start: number; end: number }>>([])
 
     useEffect(() => {
         if (everyLyrics == null) return

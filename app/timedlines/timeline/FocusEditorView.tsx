@@ -3,6 +3,7 @@ import { formattedMS } from '../page'
 import { DragToTimelineDrophandleComponent } from './DragToTimelineComponent'
 import { useAppDispatch, useAppSelector } from '@/lib/hooks'
 import * as AudioPlayerActions from '@/lib/audioplayer'
+import * as TimedlinesActions from '@/lib/timedlines'
 
 function FocusEditorViewTimelineDetails({
     duration,
@@ -60,6 +61,7 @@ export default function FocusEditorView({
     zoomSize: number
     detailTime: number
 }) {
+    const dispatch = useAppDispatch()
     const state = useRef<HTMLDivElement>()
     const rootDiv = useRef<HTMLDivElement>()
     const duration = useAppSelector((state) =>
@@ -78,6 +80,28 @@ export default function FocusEditorView({
         'inactive' | 'moving' | 'resizeleft' | 'resizeright'
     >('inactive')
     const [scrollLeft, setScrollLeft] = useState(0)
+
+    /** px to ms */
+    const f = (x: number) => duration * (x / width)
+    /** ms to px */
+    const g = (x: number) => width * (x / duration)
+
+    const getTimedline = (uhash: number) => {
+        const pm = timedlines['primary'].findIndex((item) => item.uhash == uhash)
+        const sc = timedlines['secondary'].findIndex((item) => item.uhash == uhash)
+
+        if (sc == -1 && pm == -1) return null
+
+        const target: TimedlinesActions.TimelineTarget = pm !== -1 ? 'primary' : 'secondary'
+        const index = pm !== -1 ? pm : sc
+        const content = pm !== -1 ? timedlines['primary'][pm] : timedlines['secondary'][sc]
+
+        return {
+            target,
+            index,
+            content
+        }
+    }
 
     useEffect(() => {
         if (!state.current) return
@@ -104,101 +128,123 @@ export default function FocusEditorView({
         if (activityTarget == null) return
         document.body.style.setProperty('cursor', 'move', 'important')
 
-        /*
+        const result = getTimedline(activityTarget)
+        if (result == undefined) return
 
-        setTimedlines(
-            timedlines.map((item, i) => {
-                if (i != activityTarget) return item
+        const item = { ...result.content }
+        const { index, target } = result
 
-                const f = (x: number) => duration * (x / width) // px to ms
-                const g = (x: number) => width * (x / duration) // ms to px
+        const d = item.end - item.start
+        item.start = f(x)
+        item.end = f(g(d) + x)
+        if (item.end >= duration) {
+            item.end = duration
+            item.start = item.end - d
+        }
 
-                const d = item.end - item.start
-                item.start = f(x)
-                item.end = f(g(d) + x)
+        if (
+            timedlines[target][index - 1] != undefined &&
+            item.start <= timedlines[target][index - 1].end
+        ) {
+            item.start = timedlines[target][index - 1].end
+            item.end = item.start + d
+        }
 
-                if (item.end >= duration) {
-                    item.end = duration
-                    item.start = item.end - d
+        if (
+            timedlines[target][index + 1] != undefined &&
+            item.end >= timedlines[target][index + 1].start
+        ) {
+            item.end = timedlines[target][index + 1].start
+            item.start = item.end - d
+        }
+
+        dispatch(
+            TimedlinesActions.updateByUhash([
+                target,
+                {
+                    uhash: item.uhash,
+                    content: { ...item }
                 }
-
-                if (timedlines[i - 1] != undefined && item.start <= timedlines[i - 1].end) {
-                    item.start = timedlines[i - 1].end
-                    item.end = item.start + d
-                }
-
-                if (timedlines[i + 1] != undefined && item.end >= timedlines[i + 1].start) {
-                    item.end = timedlines[i + 1].start
-                    item.start = item.end - d
-                }
-
-                return item
-            })
-        ) */
+            ])
+        )
     }
 
     const resizeLeft = (x: number) => {
         if (activityTarget == null) return
         document.body.style.setProperty('cursor', 'w-resize', 'important')
 
-        /*
-        setTimedlines(
-            timedlines.map((item, i) => {
-                if (i != activityTarget) return item
+        const result = getTimedline(activityTarget)
+        if (result == undefined) return
 
-                const f = (x: number) => duration * (x / width) // px to ms
+        const item = { ...result.content }
+        const { index, target } = result
 
-                item.start = f(x)
+        item.start = f(x)
 
-                if (item.end - item.start <= 1000) {
-                    item.start = item.end - 1000
+        if (item.end - item.start <= 1000) {
+            item.start = item.end - 1000
+        }
+
+        if (
+            timedlines[target][index - 1] != undefined &&
+            item.start <= timedlines[target][index - 1].end
+        ) {
+            item.start = timedlines[target][index - 1].end
+        }
+
+        dispatch(
+            TimedlinesActions.updateByUhash([
+                target,
+                {
+                    uhash: item.uhash,
+                    content: { ...item }
                 }
-
-                if (timedlines[i - 1] != undefined && item.start <= timedlines[i - 1].end) {
-                    item.start = timedlines[i - 1].end
-                }
-
-                return item
-            })
+            ])
         )
-            */
     }
 
     const resizeRight = (x: number) => {
         if (activityTarget == null) return
         document.body.style.setProperty('cursor', 'e-resize', 'important')
-        /*
-        setTimedlines(
-            timedlines.map((item, i) => {
-                if (i != activityTarget) return item
 
-                const f = (x: number) => duration * (x / width) // px to ms
+        const result = getTimedline(activityTarget)
+        if (result == undefined) return
 
-                item.end = f(x)
+        const item = { ...result.content }
+        const { index, target } = result
 
-                if (item.end >= duration) {
-                    item.end = duration
+        item.end = f(x)
+
+        if (item.end >= duration) {
+            item.end = duration
+        }
+
+        if (item.end - item.start <= 1000) {
+            item.end = item.start + 1000
+        }
+
+        if (
+            timedlines[target][index + 1] != undefined &&
+            item.end >= timedlines[target][index + 1].start
+        ) {
+            item.end = timedlines[target][index + 1].start
+        }
+
+        dispatch(
+            TimedlinesActions.updateByUhash([
+                target,
+                {
+                    uhash: item.uhash,
+                    content: { ...item }
                 }
-
-                if (item.end - item.start <= 1000) {
-                    item.end = item.start + 1000
-                }
-
-                if (timedlines[i + 1] != undefined && item.end >= timedlines[i + 1].start) {
-                    item.end = timedlines[i + 1].start
-                }
-
-                return item
-            })
+            ])
         )
-            */
     }
 
     const handleMouseActivity = (e: MouseEvent) => {
         if (mouseActivity == 'inactive' || rootDiv.current == undefined) return
         const Xoffset = 64
 
-        const f = (x: number) => duration * (x / width) // px to ms
         let x = e.clientX - Xoffset - activityInitialOffset + scrollLeft
         if (x < 0) x = 0
 
@@ -264,7 +310,7 @@ export default function FocusEditorView({
                     {timedlines.primary.map((item, i) => (
                         <div
                             key={i}
-                            id={`detail-item-${i}`}
+                            id={`detail-item-${item.uhash}`}
                             className="border-text-800 border-[1px] absolute rounded flex justify-center items-center bg-background-800 h-8"
                             style={{
                                 width: ((item.end - item.start) / duration) * width + 'px',
@@ -279,7 +325,7 @@ export default function FocusEditorView({
                                             : ''
                                 }}
                                 onMouseDown={(e) => {
-                                    setActivityTarget(i)
+                                    setActivityTarget(item.uhash)
                                     setMouseActivity('resizeleft')
                                 }}
                                 className="left-0 absolute w-2 h-full"
@@ -292,9 +338,9 @@ export default function FocusEditorView({
                                             : ''
                                 }}
                                 onMouseDown={(e) => {
-                                    setActivityTarget(i)
+                                    setActivityTarget(item.uhash)
                                     setMouseActivity('moving')
-                                    findActivityOffset(i, e.clientX)
+                                    findActivityOffset(item.uhash, e.clientX)
                                 }}
                                 className="flex justify-center grow-[1]"
                             >
@@ -310,7 +356,7 @@ export default function FocusEditorView({
                                             : ''
                                 }}
                                 onMouseDown={(e) => {
-                                    setActivityTarget(i)
+                                    setActivityTarget(item.uhash)
                                     setMouseActivity('resizeright')
                                 }}
                                 className="right-0 absolute w-2 h-full"
@@ -328,7 +374,7 @@ export default function FocusEditorView({
                     {timedlines.secondary.map((item, i) => (
                         <div
                             key={i}
-                            id={`detail-item-${i}`}
+                            id={`detail-item-${item.uhash}`}
                             className="border-text-800 border-[1px] absolute rounded flex justify-center items-center bg-background-800 h-8"
                             style={{
                                 width: ((item.end - item.start) / duration) * width + 'px',
@@ -343,7 +389,7 @@ export default function FocusEditorView({
                                             : ''
                                 }}
                                 onMouseDown={(e) => {
-                                    setActivityTarget(i)
+                                    setActivityTarget(item.uhash)
                                     setMouseActivity('resizeleft')
                                 }}
                                 className="left-0 absolute w-2 h-full"
@@ -356,9 +402,9 @@ export default function FocusEditorView({
                                             : ''
                                 }}
                                 onMouseDown={(e) => {
-                                    setActivityTarget(i)
+                                    setActivityTarget(item.uhash)
                                     setMouseActivity('moving')
-                                    findActivityOffset(i, e.clientX)
+                                    findActivityOffset(item.uhash, e.clientX)
                                 }}
                                 className="flex justify-center grow-[1]"
                             >
@@ -374,7 +420,7 @@ export default function FocusEditorView({
                                             : ''
                                 }}
                                 onMouseDown={(e) => {
-                                    setActivityTarget(i)
+                                    setActivityTarget(item.uhash)
                                     setMouseActivity('resizeright')
                                 }}
                                 className="right-0 absolute w-2 h-full"
