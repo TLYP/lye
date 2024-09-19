@@ -1,4 +1,5 @@
 import FocusEditorView from './FocusEditorView'
+import FullView from './FullView'
 import { Dispatch, SetStateAction } from 'react'
 import { Slider } from '@mantine/core'
 
@@ -37,10 +38,10 @@ export default function Component({
 }) {
     return (
         <div className="flex fixed bottom-0 w-screen h-44 overflow-hidden bg-background-900">
-            <div className="min-w-16 h-full bg-text-950"></div>
+            <div className="min-w-16 h-full bg-text-950 select-none z-10">WIP</div>
             <div className="flex flex-col w-[calc(100%-4rem)]">
                 <ToolsView setZoomSize={setZoomSize} />
-                <div className="grow-[1] h-14 bg-background-900">full view</div>
+                <FullView />
                 <FocusEditorView detailTime={detailTime} zoomSize={zoomSize} />
             </div>
         </div>
