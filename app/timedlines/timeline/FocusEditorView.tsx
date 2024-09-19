@@ -88,7 +88,7 @@ export default function FocusEditorView({
     const [activityTarget, setActivityTarget] = useState<number | null>(null)
     const [activityInitialOffset, setActivityInitialOffset] = useState<number>(0)
     const [mouseActivity, setMouseActivity] = useState<
-        'inactive' | 'moving' | 'resizeleft' | 'resizeright'
+        'inactive' | 'moving' | 'resizeleft' | 'resizeright' | 'draggingBack'
     >('inactive')
     const [scrollLeft, setScrollLeft] = useState(0)
 
@@ -326,6 +326,11 @@ export default function FocusEditorView({
         if (mouseActivity == 'moving') movingTarget(x, e.clientY)
         else if (mouseActivity == 'resizeleft') resizeLeft(x)
         else if (mouseActivity == 'resizeright') resizeRight(x)
+        else {
+            rootDiv.current.scrollBy({
+                left: -e.movementX
+            })
+        }
     }
 
     useEffect(() => {
@@ -349,8 +354,22 @@ export default function FocusEditorView({
             session.timedlines.update()
         }
 
+        const mousedownListener = (e: MouseEvent) => {
+            if (e.button == 1) {
+                document.body.style.setProperty('cursor', 'move', 'important')
+                setActivityInitialOffset(e.clientX)
+                setMouseActivity('draggingBack')
+            }
+        }
+
+        const mousescrollListener = (e: Event) => {
+            console.log(e)
+        }
+
         document.addEventListener('mousemove', mousemoveListener)
         document.addEventListener('mouseup', mouseupListener)
+        document.addEventListener('mousedown', mousedownListener)
+        document.addEventListener('scroll', mousescrollListener)
 
         return () => {
             document.removeEventListener('mousemove', mousemoveListener)
@@ -372,7 +391,7 @@ export default function FocusEditorView({
     return (
         <div
             ref={rootDiv as any}
-            className="flex z-10 overflow-y-hidden overflow-x-scroll flex-col grow bg-background-800 bg-gradient-to-b from-background-950 to-45% to-background-900"
+            className="flex z-10 overflow-y-hidden overflow-x-hidden flex-col grow bg-background-800 bg-gradient-to-b from-background-950 to-45% to-background-900"
         >
             <div className="flex flex-col grow relative" style={{ width: width + 'px' }}>
                 <div
