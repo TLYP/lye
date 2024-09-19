@@ -49,7 +49,7 @@ function LyricsView({ activeLyric }: { activeLyric: Array<[number, string]> }) {
         )
 
         session.timedlines.update()
-    }, [timedlines])
+    }, [timedlines, session])
 
     useEffect(() => {
         const uhashMap = new Map(
@@ -73,7 +73,7 @@ function LyricsView({ activeLyric }: { activeLyric: Array<[number, string]> }) {
                     )
                 )
         )
-    }, [timedlines])
+    }, [timedlines, activeLyric, dispatch])
 
     const lineInTimeline = (uhash: number) =>
         timedlines.primary.findIndex((item) => item.uhash == uhash) !== -1 ||
@@ -184,7 +184,7 @@ export default function Page() {
 
             dispatch(TimedlinesActions.loadAll(timedlines))
         })()
-    }, [everyLyrics, activeSession])
+    }, [everyLyrics, activeSession, dispatch])
 
     useEffect(() => {
         if (zoomSize <= 0.75) setDetailTime(2000)
