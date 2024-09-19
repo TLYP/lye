@@ -199,7 +199,7 @@ export default function Component({
     }
 
     useEffect(() => {
-        const handleMouseUp = (e: MouseEvent) => {
+        const handleMouseUp = () => {
             setAction(null)
         }
 
