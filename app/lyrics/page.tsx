@@ -5,16 +5,28 @@ import { diffArrays } from 'diff'
 import { IconInfoCircle } from '@tabler/icons-react'
 import { useAppSelector, useAppDispatch } from '@/lib/hooks'
 import * as Lyrics from '@/lib/lyrics'
-import { Session } from '../cachedb/sessions'
+import * as TimedlinesActions from '@/lib/timedlines'
+import { Session, SessionReference } from '../cachedb/sessions'
+import { cyrb53 } from '../cachedb'
+import { TimedLinesReferenceLine } from '../cachedb/timedlines'
 
 export default function Page() {
     const activeSession = useAppSelector((state) => state.sessions.activeSession)
+    const [session, setSession] = useState<null | SessionReference>(null)
     const everyLyrics = useAppSelector((state) => state.lyrics.lyrics)
-    const [activeLyric, setActiveLyric] = useState<string>('')
+    const timedlines = useAppSelector((state) => state.timedlines)
     const dispatch = useAppDispatch()
+    const [activeLyric, setActiveLyric] = useState<string>('')
     const [mapped, setMapped] = useState(['', ''])
     const [value, setValue] = useState<null | string>(null)
     const textarea = useRef<HTMLTextAreaElement>()
+
+    useEffect(() => {
+        if (activeSession == null) return
+        ;(async () => {
+            setSession(await Session.get(activeSession.uuid))
+        })()
+    }, [activeSession])
 
     useEffect(() => {
         if (everyLyrics == null) return
@@ -26,6 +38,17 @@ export default function Page() {
         setActiveLyric(data)
         setValue(data)
     }, [everyLyrics, activeSession])
+
+    useEffect(() => {
+        ;(async () => {
+            if (activeSession === null) return
+
+            const session = await Session.get(activeSession.uuid)
+            const timedlines = session.timedlines.serialize().timelines
+
+            dispatch(TimedlinesActions.loadAll(timedlines))
+        })()
+    }, [everyLyrics, activeSession, dispatch])
 
     const onchange = () => {
         const text = textarea!.current!.value
@@ -72,20 +95,27 @@ export default function Page() {
             }
         }
 
-        let v = updates.map((t) => (t[0] == t[1] ? (t[2] ? '+' : ' ') : t[1]))
+        let v = updates.map((t) => {
+            if (t[0] == t[1]) return t[2] ? '+' : ' '
+
+            const item =
+                timedlines.primary.find((it) => it.linenumber === t[1]) ||
+                timedlines.secondary.find((it) => it.linenumber === t[1])
+
+            if (item === undefined) return ' '
+
+            return t[1]
+        })
         setMapped(v)
     }
 
     const saveHandle = async () => {
-        setMapped([])
         if (activeSession == null || value == null) return
         const session = await Session.get(activeSession.uuid)
 
-        const lines = value.split('\n').map((t) => ({
+        const lines = value.split('\n').map((t, i) => ({
             content: t,
-            chash: 0,
-            lhash: 0,
-            uhash: 0
+            uhash: cyrb53(`${i + 1}-${t}`)
         }))
 
         session.lyric.lines = lines
@@ -97,7 +127,48 @@ export default function Page() {
                 uuid: activeSession.lyricRef
             })
         )
+
+        for (let i = 0; i < mapped.length; i++) {
+            const oldLn = mapped[i]
+            const newLn = i + 1
+            if (typeof oldLn == 'string') continue
+            ;(['primary', 'secondary'] as const).map((target) => {
+                const item = timedlines[target].find((it) => it.linenumber == oldLn)
+                if (item === undefined) return
+                const line = lines[newLn - 1]
+
+                dispatch(
+                    TimedlinesActions.update([
+                        target,
+                        {
+                            uhash: item.uhash,
+                            content: {
+                                ...item,
+                                linenumber: newLn,
+                                uhash: line.uhash
+                            }
+                        }
+                    ])
+                )
+            })
+        }
+
+        setMapped([])
     }
+
+    useEffect(() => {
+        if (!session) return
+        session.timedlines.primary.lines = timedlines.primary.map(
+            (data) => new TimedLinesReferenceLine(data)
+        )
+
+        session.timedlines.secondary.lines = timedlines.secondary.map(
+            (data) => new TimedLinesReferenceLine(data)
+        )
+
+        session.timedlines.update()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [timedlines])
 
     return (
         <div className="flex flex-col items-center gap-4 bg-background-base w-full h-full py-6 overflow-y-scroll">

@@ -5,8 +5,6 @@ export const TABLE_NAME = 'lyrics'
 export type LyricLine = {
     content: string
     uhash: number // unique hash
-    chash: number // content hash
-    lhash: number // line number hash
 }
 
 export type LyricData = {
@@ -53,10 +51,7 @@ export class Lyric {
 }
 
 export class LyricReference {
-    constructor(
-        private data: LyricData,
-        private db: IDBDatabase
-    ) {}
+    constructor(private data: LyricData, private db: IDBDatabase) {}
 
     public serialize() {
         return this.data
