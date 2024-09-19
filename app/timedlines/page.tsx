@@ -107,6 +107,7 @@ function LyricsView({ activeLyric }: { activeLyric: Array<[number, string]> }) {
                     <div
                         className="border-background-950 border-y-[1px] flex w-28 cursor-default"
                         key={idx}
+                        data-uhash={cyrb53(`${i[0]}-${i[1]}`)}
                     >
                         <div className="text-center p-2 px-4 w-full h-[44px] ">
                             <span className="text-text-300 select-none">
@@ -119,7 +120,7 @@ function LyricsView({ activeLyric }: { activeLyric: Array<[number, string]> }) {
             <div className="rounded bg-background-900">
                 {activeLyric.map((item, idx) => (
                     <DragToTimelineComponent
-                        uhash={cyrb53(`${item[0]}-${item[1]}`, 0)}
+                        uhash={cyrb53(`${item[0]}-${item[1]}`)}
                         content={item[1]}
                         linenumber={item[0]}
                         dragcontent={`${idx + 1}`}
