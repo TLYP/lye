@@ -372,7 +372,7 @@ export default function FocusEditorView({
     return (
         <div
             ref={rootDiv as any}
-            className="flex overflow-y-hidden overflow-x-scroll flex-col grow bg-background-800 bg-gradient-to-b from-background-950 to-45% to-background-900"
+            className="flex z-10 overflow-y-hidden overflow-x-scroll flex-col grow bg-background-800 bg-gradient-to-b from-background-950 to-45% to-background-900"
         >
             <div className="flex flex-col grow relative" style={{ width: width + 'px' }}>
                 <div
