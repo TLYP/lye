@@ -49,7 +49,8 @@ function LyricsView({ activeLyric }: { activeLyric: Array<[number, string]> }) {
         )
 
         session.timedlines.update()
-    }, [timedlines, session])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [timedlines])
 
     useEffect(() => {
         const uhashMap = new Map(
