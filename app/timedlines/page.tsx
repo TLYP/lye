@@ -9,15 +9,16 @@ import { Session, SessionReference } from '../cachedb/sessions'
 import { TimedLinesReferenceLine } from '../cachedb/timedlines'
 
 export function formattedMS(milliseconds?: number) {
-    if (!milliseconds) return '--:--.---'
+    if (milliseconds == undefined) return '--:--.---'
 
     let ms = Math.round(milliseconds) % 1000
     let seconds = Math.floor((milliseconds / 1000) % 60)
     let minutes = Math.floor(milliseconds / 1000 / 60)
 
-    let fms = ms < 10 ? '.00' + ms : ms < 100 ? '.0' + ms : '.' + ms
+    // let fms = ms < 10 ? '.00' + ms : ms < 100 ? '.0' + ms : '.' + ms
+    // if (ms == 0) fms = ''
 
-    if (ms == 0) fms = ''
+    let fms = ms < 10 ? '.00' + ms : ms < 100 ? '.0' + ms : '.' + ms
 
     return `${minutes < 10 ? '0' + minutes : minutes}:${
         seconds < 10 ? '0' + seconds : seconds

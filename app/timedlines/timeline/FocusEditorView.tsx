@@ -23,30 +23,38 @@ function FocusEditorViewTimelineDetails({
                 length: details
             }).map((_, i) => (
                 <div key={i}>
-                    {i % 5 == 0 ? (
+                    {i % 16 == 0 ? (
                         <div
                             className="flex justify-center absolute min-w-[2px] h-0 bg-text-400 opacity-55"
                             style={{
-                                left: i * (divwidth / details) - 0.5 + 'px'
+                                left: (1 + i) * (divwidth / details) - 0.5 + 'px'
                             }}
                         >
                             <div className="absolute min-w-[2px] h-1 bg-text-400 z-50 opacity-95"></div>
                             <div className="-top-0.5 absolute min-w-[2px] h-2  z-50 ">
                                 <span className="text-xs text-text-400 select-none">
-                                    {formattedMS(i * detailTime)}
+                                    {formattedMS((1 + i) * detailTime)}
                                 </span>
                             </div>
-                            <div className="absolute min-w-[1px] h-24 bg-text-800 opacity-55"></div>
+                            <div className="absolute min-w-[1px] h-28 bg-text-800 opacity-55"></div>
+                        </div>
+                    ) : i % 2 !== 0 ? (
+                        <div
+                            className="absolute flex min-w-[2px] h-0 opacity-40"
+                            style={{
+                                left: (1 + i) * (divwidth / details) - 0.5 + 'px'
+                            }}
+                        >
+                            <div className="absolute min-w-[2px] h-2 bg-text-700 opacity-20"></div>
                         </div>
                     ) : (
                         <div
                             className="absolute flex min-w-[2px] h-0 opacity-40"
                             style={{
-                                left: i * (divwidth / details) - 0.5 + 'px'
+                                left: (1 + i) * (divwidth / details) - 0.5 + 'px'
                             }}
                         >
-                            <div className="absolute min-w-[2px] h-2 bg-text-800 z-50"></div>
-                            <div className="absolute min-w-[2px] h-24 bg-text-700 opacity-20"></div>
+                            <div className="absolute min-w-[2px] h-3 bg-text-800 z-50"></div>
                         </div>
                     )}
                 </div>
@@ -114,8 +122,18 @@ export default function FocusEditorView({
     }, [activeSession])
 
     useEffect(() => {
+        const handleResize = () => {
+            if (!rootDiv.current) return
+            setWidth(rootDiv.current.getBoundingClientRect().width)
+        }
+
+        window.addEventListener('resize', handleResize)
+        return () => window.removeEventListener('resize', handleResize)
+    })
+
+    useEffect(() => {
         if (!state.current) return
-        const pxBetweenDetails = 50
+        const pxBetweenDetails = 15
         const w = Math.floor(duration / 1000) * (pxBetweenDetails * zoomSize)
 
         setWidth(w)
@@ -368,7 +386,7 @@ export default function FocusEditorView({
                         divwidth={width}
                     />
                 </div>
-                <div className="h-7 flex relative grow w-full py-1">
+                <div className="h-7 flex items-center relative grow w-full py-1">
                     {/* drag component acceptor */}
                     <DragToTimelineDrophandleComponent
                         timedlineTarget={'primary'}
@@ -433,7 +451,7 @@ export default function FocusEditorView({
                         </div>
                     ))}
                 </div>
-                <div className="h-7 flex relative grow w-full py-1">
+                <div className="h-7 flex items-center relative grow w-full py-1">
                     <DragToTimelineDrophandleComponent
                         timedlineTarget={'secondary'}
                         scrollLeft={scrollLeft}
