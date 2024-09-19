@@ -32,7 +32,7 @@ function FocusEditorViewTimelineDetails({
                                     {formattedMS((1 + i) * detailTime)}
                                 </span>
                             </div>
-                            <div className="absolute min-w-[1px] h-28 bg-text-800 opacity-55"></div>
+                            <div className="absolute min-w-[1px] h-16 bg-text-800 opacity-55"></div>
                         </div>
                     ) : i % 2 !== 0 ? (
                         <div
@@ -100,7 +100,7 @@ export default function FullView() {
                 {timedlines.primary.map((item, i) => (
                     <div
                         key={i}
-                        className="border-text-800 border-[1px] absolute rounded-sm flex justify-center items-center bg-background-800 h-3"
+                        className="border-text-800 border-[1px] absolute rounded-sm flex justify-center items-center bg-background-800 h-4"
                         style={{
                             width: ((item.end - item.start) / duration) * width + 'px',
                             left: (item.start / duration) * width + 'px'
@@ -118,7 +118,7 @@ export default function FullView() {
                 {timedlines.secondary.map((item, i) => (
                     <div
                         key={i}
-                        className="border-text-800 border-[1px] absolute rounded-sm flex justify-center items-center bg-background-800 h-3"
+                        className="border-text-800 border-[1px] absolute rounded-sm flex justify-center items-center bg-background-800 h-4"
                         style={{
                             width: ((item.end - item.start) / duration) * width + 'px',
                             left: (item.start / duration) * width + 'px'
