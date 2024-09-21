@@ -19,42 +19,31 @@ function FocusEditorViewTimelineDetails({
     edetails: number
 }) {
     const duration = end - start
+    const rstart = start % detailTime // start remainder
+    const dstart = start - rstart // start scaled for detailtimed
+    const ostart = (rstart / duration) * width // start width
+
     const durationScaled = duration - (duration % detailTime) // properly scaled duration
     const remain = 1 - durationScaled / duration // remainder duration percentage
     const rwidth = width * remain // remainder width
     const dwidth = width - rwidth // width without remainder width
     const dgap = detailTime / durationScaled // detail gap
-
     const details = edetails * (durationScaled / detailTime) + 1
+    const pxgap = width / details
+    let sdetails = Math.floor(ostart / pxgap)
+    sdetails += sdetails % 2
 
     return (
         <div className="relative flex w-full overflow-hidden">
             {Array.from({
-                length: details
+                length: sdetails
             }).map((_, i) => (
-                <div key={i}>
-                    {i % edetails === 0 && (
-                        <div
-                            className="z-30 flex justify-center absolute min-w-[2px] h-0 bg-text-400 opacity-55"
-                            style={{
-                                left: (i / edetails) * dgap * dwidth - 0.5 + 'px'
-                            }}
-                        >
-                            <div className="absolute min-w-[2px] h-2 bg-text-500 z-50 opacity-95"></div>
-                            <div className="-top-0.5 absolute min-w-[2px] h-2  z-50 ">
-                                <span className="text-xs text-text-400 select-none">
-                                    {formattedMS(start + (i / edetails) * dgap * durationScaled)}
-                                </span>
-                            </div>
-                            {/* <div className="absolute min-w-[1px] h-16 bg-text-100 opacity-55"></div> */}
-                        </div>
-                    )}
-
+                <Fragment key={i}>
                     {i % edetails !== 0 && i % 2 == 1 && (
                         <div
                             className="absolute flex min-w-[2px] h-0 opacity-50"
                             style={{
-                                left: (i / edetails) * dgap * dwidth - 0.5 + 'px'
+                                left: (i / sdetails) * ostart + 'px'
                             }}
                         >
                             <div className="absolute min-w-[2px] h-2 bg-text-600 opacity-50"></div>
@@ -65,7 +54,52 @@ function FocusEditorViewTimelineDetails({
                         <div
                             className="absolute flex min-w-[2px] h-0 opacity-40"
                             style={{
-                                left: (i / edetails) * dgap * dwidth - 0.5 + 'px'
+                                left: (i / sdetails) * ostart + 'px'
+                            }}
+                        >
+                            <div className="absolute min-w-[2px] h-3 bg-text-700 z-50"></div>
+                        </div>
+                    )}
+                </Fragment>
+            ))}
+
+            {Array.from({
+                length: details
+            }).map((_, i) => (
+                <div key={i}>
+                    {i % edetails === 0 && (
+                        <div
+                            className="z-30 flex justify-center absolute min-w-[2px] h-0 bg-text-400 opacity-55"
+                            style={{
+                                left: ostart + (i / edetails) * dgap * dwidth - 0.5 + 'px'
+                            }}
+                        >
+                            <div className="absolute min-w-[2px] h-2 bg-text-500 z-50 opacity-95"></div>
+                            <div className="-top-0.5 absolute min-w-[2px] h-2  z-50 ">
+                                <span className="text-xs text-text-400 select-none">
+                                    {formattedMS(dstart + (i / edetails) * dgap * durationScaled)}
+                                </span>
+                            </div>
+                            {/* <div className="absolute min-w-[1px] h-16 bg-text-100 opacity-55"></div> */}
+                        </div>
+                    )}
+
+                    {i % edetails !== 0 && i % 2 == 1 && (
+                        <div
+                            className="absolute flex min-w-[2px] h-0 opacity-50"
+                            style={{
+                                left: ostart + (i / edetails) * dgap * dwidth + 'px'
+                            }}
+                        >
+                            <div className="absolute min-w-[2px] h-2 bg-text-600 opacity-50"></div>
+                        </div>
+                    )}
+
+                    {i % edetails !== 0 && i % 2 != 1 && i % 2 == 0 && (
+                        <div
+                            className="absolute flex min-w-[2px] h-0 opacity-40"
+                            style={{
+                                left: ostart + (i / edetails) * dgap * dwidth + 'px'
                             }}
                         >
                             <div className="absolute min-w-[2px] h-3 bg-text-700 z-50"></div>
@@ -89,8 +123,8 @@ function TimedLyricEditor() {
         }>
     >([])
 
-    const start = 26 * 1000
-    const end = 32 * 1000
+    const start = 26 * 1000 + 400
+    const end = (26 + 8) * 1000 + 300
     const duration = end - start
     const lyric = 'What are these things I see?'
     const [timedlyrics, _] = useState([
@@ -102,23 +136,33 @@ function TimedLyricEditor() {
     ])
 
     useEffect(() => {
+        if (focusWidth == 0) return
         let oset = 0
         let pt = 0
         let slices = []
+        const detailTime = 1000
+        const rstart = start % detailTime
+        const dstart = start - rstart
+        let ostart = (rstart / duration) * focusWidth
+
         for (const timedlyric of timedlyrics) {
             slices.push({
                 type: 'content',
                 content: lyric.slice(oset, timedlyric.offset).trim(),
-                width: ((timedlyric.time - pt) / duration) * focusWidth
+                width: ostart + ((timedlyric.time - pt) / duration) * focusWidth
             })
             slices.push({ type: timedlyric.type })
             oset = timedlyric.offset
             pt = timedlyric.time
+            ostart = 0
         }
+
+        ostart = (rstart / duration) * focusWidth
+
         slices.push({
             type: 'content',
             content: lyric.slice(oset).trim(),
-            width: ((duration - pt) / duration) * focusWidth
+            width: -ostart + ((duration - pt) / duration) * focusWidth
         })
 
         setSlices(slices as any)
@@ -161,7 +205,7 @@ function TimedLyricEditor() {
                                 <div
                                     className="flex justify-center  rounded-sm"
                                     style={{
-                                        width: slice.width ?? 'px'
+                                        minWidth: (slice.width ?? 0) - (idx / 2) * 1 ?? 'px'
                                     }}
                                 >
                                     <span className="text-[1vw] text-text-300">
