@@ -10,7 +10,7 @@ function FocusEditorViewTimelineDetails({
     end,
     width,
     detailTime,
-    edetails
+    edetails: extradetails
 }: {
     start: number
     end: number
@@ -18,21 +18,82 @@ function FocusEditorViewTimelineDetails({
     detailTime: number
     edetails: number
 }) {
+    const t = detailTime
+    const duration = end - start
+    const rstart = t - (start % t)
+    const rend = end % t
+    const fstart = start + rstart
+    // const fend = end - rend
+    const ostart = width * (rstart / duration)
+    const pduration = duration - (rstart + rend)
+    const pwidth = width * (pduration / duration)
+    const details = extradetails * (pduration / t)
+
+    return (
+        <div className="relative flex w-full">
+            {Array.from({ length: details + 1 }).map((_, i) => (
+                <Fragment key={i}>
+                    {i % extradetails === 0 && (
+                        <div
+                            className="z-30 flex justify-center absolute min-w-[2px] h-0 bg-text-400 opacity-55"
+                            style={{
+                                left: ostart + (i / details) * pwidth - 0.5 + 'px'
+                            }}
+                        >
+                            <div className="absolute min-w-[2px] h-2 bg-text-500 z-50 opacity-95"></div>
+                            <div className="-top-0.5 absolute min-w-[2px] h-2  z-50 ">
+                                <span className="text-xs text-text-400 select-none">
+                                    {formattedMS(fstart + (i / details) * pduration)}
+                                </span>
+                            </div>
+                            <div className="absolute min-w-[2px] min-h-24 bg-gradient-to-t from-background-900  to-95% to-background-800 opacity-70"></div>
+                        </div>
+                    )}
+
+                    {i % extradetails !== 0 && i % 2 == 1 && (
+                        <div
+                            className="absolute flex min-w-[2px] h-0 opacity-50"
+                            style={{
+                                left: ostart + (i / details) * pwidth - 0.5 + 'px'
+                            }}
+                        >
+                            <div className="absolute min-w-[2px] h-2 bg-text-600 opacity-50"></div>
+                        </div>
+                    )}
+
+                    {i % extradetails !== 0 && i % 2 != 1 && i % 2 == 0 && (
+                        <div
+                            className="absolute flex min-w-[2px] h-0 opacity-40"
+                            style={{
+                                left: ostart + (i / details) * pwidth - 0.5 + 'px'
+                            }}
+                        >
+                            <div className="absolute min-w-[2px] h-3 bg-text-700 z-50"></div>
+                        </div>
+                    )}
+                </Fragment>
+            ))}
+        </div>
+    )
+
+    /*
     const duration = end - start
     const rstart = start % detailTime // start remainder
     const dstart = start - rstart // start scaled for detailtimed
     const ostart = (rstart / duration) * width // start width
+    console.log(rstart)
 
     const durationScaled = duration - (duration % detailTime) // properly scaled duration
     const remain = 1 - durationScaled / duration // remainder duration percentage
     const rwidth = width * remain // remainder width
-    const dwidth = width - rwidth // width without remainder width
+    const dwidth = width - remain // width without remainder width
     const dgap = detailTime / durationScaled // detail gap
     const details = edetails * (durationScaled / detailTime) + 1
     const pxgap = width / details
     let sdetails = Math.floor(ostart / pxgap)
     sdetails += sdetails % 2
 
+    console.log(width, rwidth)
     return (
         <div className="relative flex w-full overflow-hidden">
             {Array.from({
@@ -80,7 +141,6 @@ function FocusEditorViewTimelineDetails({
                                     {formattedMS(dstart + (i / edetails) * dgap * durationScaled)}
                                 </span>
                             </div>
-                            {/* <div className="absolute min-w-[1px] h-16 bg-text-100 opacity-55"></div> */}
                         </div>
                     )}
 
@@ -109,6 +169,7 @@ function FocusEditorViewTimelineDetails({
             ))}
         </div>
     )
+        */
 }
 
 function TimedLyricEditor() {
@@ -123,8 +184,11 @@ function TimedLyricEditor() {
         }>
     >([])
 
-    const start = 26 * 1000 + 400
-    const end = (26 + 8) * 1000 + 300
+    const detailTime = 1000
+    const extradetails = 15
+    const start = 26 * 1000 + 700
+    const end = 34 * 1000 + 300
+    console.log(start, end)
     const duration = end - start
     const lyric = 'What are these things I see?'
     const [timedlyrics, _] = useState([
@@ -140,7 +204,6 @@ function TimedLyricEditor() {
         let oset = 0
         let pt = 0
         let slices = []
-        const detailTime = 1000
         const rstart = start % detailTime
         const dstart = start - rstart
         let ostart = (rstart / duration) * focusWidth
@@ -172,14 +235,13 @@ function TimedLyricEditor() {
         if (!rootDiv.current) return
         const w = rootDiv.current.getBoundingClientRect().width
         setWidth(w)
-        const detailTime = 1000
-        const edetails = 20
         const durationScaled = duration - (duration % detailTime) // properly scaled duration
-        const details = edetails * (durationScaled / detailTime) + 1
+        const details = extradetails * Math.floor(durationScaled / detailTime) + 1
 
-        const gapsize = 10
+        const gapsize = 20
 
-        setFocusWidth(w < gapsize * details ? gapsize * details : w)
+        // setFocusWidth(w < gapsize * details ? gapsize * details : w)
+        setFocusWidth(w * 1)
     }, [rootDiv, width])
 
     return (
@@ -188,18 +250,21 @@ function TimedLyricEditor() {
             className="flex flex-col text-lg h-24 overflow-x-auto overflow-y-hidden w-full bg-background-800 bg-gradient-to-t from-background-900  to-95% to-background-950"
             style={{ width: width == 0 ? '' : width + 'px' }}
         >
-            <div className="flex flex-col h-full" style={{ width: focusWidth + 'px' }}>
+            <div
+                className="flex flex-col h-full overflow-hidden"
+                style={{ width: focusWidth + 'px' }}
+            >
                 <div className="flex h-6">
                     <FocusEditorViewTimelineDetails
                         start={start}
                         end={end}
                         width={focusWidth}
-                        detailTime={1000}
-                        edetails={20}
+                        detailTime={detailTime}
+                        edetails={extradetails}
                     />
                 </div>
                 <div className="z-10 flex items-center h-16">
-                    {slices.map((slice, idx) => (
+                    {([] as any[]).map((slice, idx) => (
                         <Fragment key={idx}>
                             {slice.type == 'content' && (
                                 <div
