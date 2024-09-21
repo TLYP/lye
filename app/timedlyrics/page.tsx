@@ -9,20 +9,25 @@ function FocusEditorViewTimelineDetails({
     start,
     end,
     width,
-    detailTime
+    detailTime,
+    edetails
 }: {
     start: number
-
     end: number
     width: number
     detailTime: number
+    edetails: number
 }) {
     const duration = end - start
     // not fully accurate
     // fixme: different approach needed
-    const durationP = duration - (duration % detailTime)
-    const details = 10 * Math.floor(durationP / detailTime)
-    return <></>
+    const durationScaled = duration - (duration % detailTime) // properly scaled duration
+    const remain = 1 - durationScaled / duration // remainder duration percentage
+    const rwidth = width * remain // remainder width
+    const dwidth = width - rwidth // width without remainder width
+    const dgap = detailTime / durationScaled // detail gap
+
+    const details = edetails * (durationScaled / detailTime)
 
     return (
         <div className="relative flex w-full overflow-hidden">
@@ -30,42 +35,42 @@ function FocusEditorViewTimelineDetails({
                 length: details
             }).map((_, i) => (
                 <div key={i}>
-                    {i % 10 === 0 && (
+                    {i % edetails === 0 && (
                         <div
                             className="z-30 flex justify-center absolute min-w-[2px] h-0 bg-text-400 opacity-55"
                             style={{
-                                left: i * (width / details) - 0.5 + 'px'
+                                left: (i / edetails) * dgap * dwidth - 0.5 + 'px'
                             }}
                         >
-                            <div className="absolute min-w-[2px] h-1 bg-text-700 z-50 opacity-95"></div>
+                            <div className="absolute min-w-[2px] h-2 bg-text-500 z-50 opacity-95"></div>
                             <div className="-top-0.5 absolute min-w-[2px] h-2  z-50 ">
                                 <span className="text-xs text-text-400 select-none">
-                                    {formattedMS((i / details) * durationP)}
+                                    {formattedMS(start + (i / edetails) * dgap * durationScaled)}
                                 </span>
                             </div>
-                            <div className="absolute min-w-[1px] h-16 bg-text-800 opacity-55"></div>
+                            {/* <div className="absolute min-w-[1px] h-16 bg-text-100 opacity-55"></div> */}
                         </div>
                     )}
 
-                    {i % 2 == 1 && (
+                    {i % edetails !== 0 && i % 2 == 1 && (
                         <div
-                            className="absolute flex min-w-[2px] h-0 opacity-40"
+                            className="absolute flex min-w-[2px] h-0 opacity-50"
                             style={{
-                                left: i * (width / details) - 0.5 + 'px'
+                                left: (i / edetails) * dgap * dwidth - 0.5 + 'px'
                             }}
                         >
-                            <div className="absolute min-w-[2px] h-2 bg-text-700 opacity-20"></div>
+                            <div className="absolute min-w-[2px] h-2 bg-text-600 opacity-50"></div>
                         </div>
                     )}
 
-                    {i % 2 == 0 && (
+                    {i % edetails !== 0 && i % 2 != 1 && i % 2 == 0 && (
                         <div
                             className="absolute flex min-w-[2px] h-0 opacity-40"
                             style={{
-                                left: i * (width / details) - 0.5 + 'px'
+                                left: (i / edetails) * dgap * dwidth - 0.5 + 'px'
                             }}
                         >
-                            <div className="absolute min-w-[2px] h-3 bg-text-800 z-50"></div>
+                            <div className="absolute min-w-[2px] h-3 bg-text-700 z-50"></div>
                         </div>
                     )}
                 </div>
@@ -86,7 +91,7 @@ function TimedLyricEditor() {
     >([])
 
     const start = 26 * 1000
-    const end = (26 + 13) * 1000 + 100
+    const end = 38 * 1000 + 100
     const duration = end - start
     const lyric = 'What are these things I see?'
     const [timedlyrics, _] = useState([
@@ -117,7 +122,6 @@ function TimedLyricEditor() {
             width: ((duration - pt) / duration) * width
         })
 
-        console.log(slices)
         setSlices(slices as any)
     }, [width, duration, timedlyrics])
 
@@ -138,6 +142,7 @@ function TimedLyricEditor() {
                     end={end}
                     width={width}
                     detailTime={2000}
+                    edetails={10}
                 />
             </div>
             <div className="z-10 flex items-center h-16">
