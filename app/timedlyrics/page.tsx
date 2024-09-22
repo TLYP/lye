@@ -28,148 +28,99 @@ function FocusEditorViewTimelineDetails({
     const pduration = duration - (rstart + rend)
     const pwidth = width * (pduration / duration)
     const details = extradetails * (pduration / t)
+    const pgap = pwidth / details
+    const pdgap = pduration / details
+    const startDetails = Math.ceil(ostart / pgap) + 1
+    const endDetails = Math.ceil(ostart / pgap)
+
+    const ItemWithTime = ({ left, ms }: { left: number; ms: number }) => (
+        <div
+            className="z-10 flex justify-center absolute min-w-[2px] h-0 bg-text-400 opacity-35"
+            style={{
+                left: left + 'px'
+            }}
+        >
+            <div className="absolute min-w-[2px] h-2 bg-text-500 z-50 opacity-95"></div>
+            <div className="-top-0.5 absolute min-w-[2px] h-2  z-50 ">
+                <span className="text-xs text-text-400 select-none">{formattedMS(ms)}</span>
+            </div>
+            <div className="absolute min-w-[2px] min-h-24 bg-gradient-to-t from-background-950 to-95% to-background-900 opacity-50"></div>
+        </div>
+    )
+
+    const ItemTallDivider = ({ left }: { left: number }) => (
+        <div
+            className="absolute flex min-w-[2px] h-0 opacity-50"
+            style={{
+                left: left + 'px'
+            }}
+        >
+            <div className="absolute min-w-[2px] h-2 bg-text-600 opacity-50"></div>
+        </div>
+    )
+    const ItemShortDivider = ({ left }: { left: number }) => (
+        <div
+            className="absolute flex min-w-[2px] h-0 opacity-40"
+            style={{
+                left: left + 'px'
+            }}
+        >
+            <div className="absolute min-w-[2px] h-3 bg-text-700 z-50"></div>
+        </div>
+    )
 
     return (
         <div className="relative flex w-full">
-            {Array.from({ length: details + 1 }).map((_, i) => (
-                <Fragment key={i}>
-                    {i % extradetails === 0 && (
-                        <div
-                            className="z-30 flex justify-center absolute min-w-[2px] h-0 bg-text-400 opacity-55"
-                            style={{
-                                left: ostart + (i / details) * pwidth - 0.5 + 'px'
-                            }}
-                        >
-                            <div className="absolute min-w-[2px] h-2 bg-text-500 z-50 opacity-95"></div>
-                            <div className="-top-0.5 absolute min-w-[2px] h-2  z-50 ">
-                                <span className="text-xs text-text-400 select-none">
-                                    {formattedMS(fstart + (i / details) * pduration)}
-                                </span>
-                            </div>
-                            <div className="absolute min-w-[2px] min-h-24 bg-gradient-to-t from-background-900  to-95% to-background-800 opacity-70"></div>
-                        </div>
-                    )}
+            {Array.from({ length: startDetails }).map((_, i) => {
+                const left = ostart - i * pgap
 
-                    {i % extradetails !== 0 && i % 2 == 1 && (
-                        <div
-                            className="absolute flex min-w-[2px] h-0 opacity-50"
-                            style={{
-                                left: ostart + (i / details) * pwidth - 0.5 + 'px'
-                            }}
-                        >
-                            <div className="absolute min-w-[2px] h-2 bg-text-600 opacity-50"></div>
-                        </div>
-                    )}
+                let element: React.ReactNode
 
-                    {i % extradetails !== 0 && i % 2 != 1 && i % 2 == 0 && (
-                        <div
-                            className="absolute flex min-w-[2px] h-0 opacity-40"
-                            style={{
-                                left: ostart + (i / details) * pwidth - 0.5 + 'px'
-                            }}
-                        >
-                            <div className="absolute min-w-[2px] h-3 bg-text-700 z-50"></div>
-                        </div>
-                    )}
-                </Fragment>
-            ))}
+                if (i % extradetails === 0 && i !== 0) {
+                    element = <ItemWithTime left={left} ms={1000} />
+                } else if (i % 2 == 1) {
+                    element = <ItemTallDivider left={left} />
+                } else {
+                    element = <ItemShortDivider left={left} />
+                }
+
+                return <Fragment key={i}>{element}</Fragment>
+            })}
+
+            {Array.from({ length: details + 1 }).map((_, i) => {
+                let left = ostart + i * pgap
+                return (
+                    <Fragment key={i}>
+                        {i % extradetails === 0 && (
+                            <ItemWithTime left={left} ms={fstart + i * pdgap} />
+                        )}
+
+                        {i % extradetails !== 0 && i % 2 == 1 && <ItemTallDivider left={left} />}
+
+                        {i % extradetails !== 0 && i % 2 != 1 && i % 2 == 0 && (
+                            <ItemShortDivider left={left} />
+                        )}
+                    </Fragment>
+                )
+            })}
+
+            {Array.from({ length: endDetails }).map((_, i) => {
+                const left = ostart + pwidth + i * pgap
+
+                let element: React.ReactNode
+
+                if (i % extradetails === 0 && i !== 0) {
+                    element = <ItemWithTime left={left} ms={1000} />
+                } else if (i % 2 == 1) {
+                    element = <ItemTallDivider left={left} />
+                } else {
+                    element = <ItemShortDivider left={left} />
+                }
+
+                return <Fragment key={i}>{element}</Fragment>
+            })}
         </div>
     )
-
-    /*
-    const duration = end - start
-    const rstart = start % detailTime // start remainder
-    const dstart = start - rstart // start scaled for detailtimed
-    const ostart = (rstart / duration) * width // start width
-    console.log(rstart)
-
-    const durationScaled = duration - (duration % detailTime) // properly scaled duration
-    const remain = 1 - durationScaled / duration // remainder duration percentage
-    const rwidth = width * remain // remainder width
-    const dwidth = width - remain // width without remainder width
-    const dgap = detailTime / durationScaled // detail gap
-    const details = edetails * (durationScaled / detailTime) + 1
-    const pxgap = width / details
-    let sdetails = Math.floor(ostart / pxgap)
-    sdetails += sdetails % 2
-
-    console.log(width, rwidth)
-    return (
-        <div className="relative flex w-full overflow-hidden">
-            {Array.from({
-                length: sdetails
-            }).map((_, i) => (
-                <Fragment key={i}>
-                    {i % edetails !== 0 && i % 2 == 1 && (
-                        <div
-                            className="absolute flex min-w-[2px] h-0 opacity-50"
-                            style={{
-                                left: (i / sdetails) * ostart + 'px'
-                            }}
-                        >
-                            <div className="absolute min-w-[2px] h-2 bg-text-600 opacity-50"></div>
-                        </div>
-                    )}
-
-                    {i % edetails !== 0 && i % 2 != 1 && i % 2 == 0 && (
-                        <div
-                            className="absolute flex min-w-[2px] h-0 opacity-40"
-                            style={{
-                                left: (i / sdetails) * ostart + 'px'
-                            }}
-                        >
-                            <div className="absolute min-w-[2px] h-3 bg-text-700 z-50"></div>
-                        </div>
-                    )}
-                </Fragment>
-            ))}
-
-            {Array.from({
-                length: details
-            }).map((_, i) => (
-                <div key={i}>
-                    {i % edetails === 0 && (
-                        <div
-                            className="z-30 flex justify-center absolute min-w-[2px] h-0 bg-text-400 opacity-55"
-                            style={{
-                                left: ostart + (i / edetails) * dgap * dwidth - 0.5 + 'px'
-                            }}
-                        >
-                            <div className="absolute min-w-[2px] h-2 bg-text-500 z-50 opacity-95"></div>
-                            <div className="-top-0.5 absolute min-w-[2px] h-2  z-50 ">
-                                <span className="text-xs text-text-400 select-none">
-                                    {formattedMS(dstart + (i / edetails) * dgap * durationScaled)}
-                                </span>
-                            </div>
-                        </div>
-                    )}
-
-                    {i % edetails !== 0 && i % 2 == 1 && (
-                        <div
-                            className="absolute flex min-w-[2px] h-0 opacity-50"
-                            style={{
-                                left: ostart + (i / edetails) * dgap * dwidth + 'px'
-                            }}
-                        >
-                            <div className="absolute min-w-[2px] h-2 bg-text-600 opacity-50"></div>
-                        </div>
-                    )}
-
-                    {i % edetails !== 0 && i % 2 != 1 && i % 2 == 0 && (
-                        <div
-                            className="absolute flex min-w-[2px] h-0 opacity-40"
-                            style={{
-                                left: ostart + (i / edetails) * dgap * dwidth + 'px'
-                            }}
-                        >
-                            <div className="absolute min-w-[2px] h-3 bg-text-700 z-50"></div>
-                        </div>
-                    )}
-                </div>
-            ))}
-        </div>
-    )
-        */
 }
 
 function TimedLyricEditor() {
@@ -185,10 +136,9 @@ function TimedLyricEditor() {
     >([])
 
     const detailTime = 1000
-    const extradetails = 15
-    const start = 26 * 1000 + 700
-    const end = 34 * 1000 + 300
-    console.log(start, end)
+    const extradetails = 16
+    const start = 26 * 1000 + 200
+    const end = 32 * 1000 + 230
     const duration = end - start
     const lyric = 'What are these things I see?'
     const [timedlyrics, _] = useState([
@@ -204,28 +154,23 @@ function TimedLyricEditor() {
         let oset = 0
         let pt = 0
         let slices = []
-        const rstart = start % detailTime
-        const dstart = start - rstart
-        let ostart = (rstart / duration) * focusWidth
+        const duration = end - start
 
         for (const timedlyric of timedlyrics) {
             slices.push({
                 type: 'content',
                 content: lyric.slice(oset, timedlyric.offset).trim(),
-                width: ostart + ((timedlyric.time - pt) / duration) * focusWidth
+                width: ((timedlyric.time - pt) / duration) * focusWidth
             })
             slices.push({ type: timedlyric.type })
             oset = timedlyric.offset
             pt = timedlyric.time
-            ostart = 0
         }
-
-        ostart = (rstart / duration) * focusWidth
 
         slices.push({
             type: 'content',
             content: lyric.slice(oset).trim(),
-            width: -ostart + ((duration - pt) / duration) * focusWidth
+            width: ((duration - pt) / duration) * focusWidth
         })
 
         setSlices(slices as any)
@@ -238,10 +183,10 @@ function TimedLyricEditor() {
         const durationScaled = duration - (duration % detailTime) // properly scaled duration
         const details = extradetails * Math.floor(durationScaled / detailTime) + 1
 
-        const gapsize = 20
+        const gapsize = 5
 
-        // setFocusWidth(w < gapsize * details ? gapsize * details : w)
-        setFocusWidth(w * 1)
+        setFocusWidth(w < gapsize * details ? gapsize * details : w)
+        // setFocusWidth(w * 1)
     }, [rootDiv, width])
 
     return (
@@ -264,7 +209,7 @@ function TimedLyricEditor() {
                     />
                 </div>
                 <div className="z-10 flex items-center h-16">
-                    {([] as any[]).map((slice, idx) => (
+                    {slices.map((slice, idx) => (
                         <Fragment key={idx}>
                             {slice.type == 'content' && (
                                 <div
