@@ -5,6 +5,7 @@ import SessionsReducer from './sessions'
 import TimedLinesReducer from './timedlines'
 import DragToTimelineReducer from './local/dragToTimeline'
 import AudioPlayerReducer from './audioplayer'
+import TimedLyricsReducer from './timedlyrics'
 
 export const makeStore = () => {
     return configureStore({
@@ -12,6 +13,7 @@ export const makeStore = () => {
             lyrics: LyricsReducer,
             metadata: MetadataReducer,
             timedlines: TimedLinesReducer,
+            timedlyrics: TimedLyricsReducer,
             sessions: SessionsReducer,
             dragToTimeline: DragToTimelineReducer,
             audioPlayer: AudioPlayerReducer
