@@ -2,15 +2,17 @@ import { getDatabase } from '.'
 
 export const TABLE_NAME = 'timedlyrics'
 
-export type TimedLyricLine = {
+export type TimedLyricLineItemData = {
     offset: number
     type: 'nospace' | 'space'
     time: number
 }
 
+export type TimedLyricLineData = Array<TimedLyricLineItemData>
+
 export type TimedLyricData = {
     uuid: string
-    lines: Array<TimedLyricLine>
+    lines: Record<number, TimedLyricLineData> // u-hash mapped to timedlyrics line
 }
 
 export class TimedLyric {
@@ -52,10 +54,7 @@ export class TimedLyric {
 }
 
 export class TimedLyricReference {
-    constructor(
-        private data: TimedLyricData,
-        private db: IDBDatabase
-    ) {}
+    constructor(private data: TimedLyricData, private db: IDBDatabase) {}
 
     public serialize() {
         return this.data
