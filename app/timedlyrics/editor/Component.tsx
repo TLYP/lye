@@ -6,14 +6,11 @@ import SpaceStepIcon from '@/app/components/icons/SpaceSep'
 import { TimedLyricLineData } from '../../cachedb/timedlyrics'
 import FocusEditorViewTimelineDetails from '../TimelineDetailsComponent'
 
-export default function TimedLyricEditor({
-    activeLyrics
-}: {
-    activeLyrics: Array<[number, string]>
-}) {
+export default function TimedLyricEditor() {
     const dispatch = useAppDispatch()
     const activeLine = useAppSelector((state) => state.timedlyrics.activeLine)
     const timedlines = useAppSelector((state) => state.timedlines)
+    const activeLyrics = useAppSelector((state) => state.lyrics.active)
     const lines = useAppSelector((state) => state.timedlyrics.lines)
     const [width, setWidth] = useState(0)
     const [focusWidth, setFocusWidth] = useState(0)
