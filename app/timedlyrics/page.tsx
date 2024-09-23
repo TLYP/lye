@@ -137,8 +137,8 @@ function TimedLyricEditor() {
 
     const detailTime = 1000
     const extradetails = 16
-    const start = 26 * 1000 + 200
-    const end = 32 * 1000 + 230
+    const start = 26 * 1000 + 500
+    const end = 32 * 1000 + 500
     const duration = end - start
     const lyric = 'What are these things I see?'
     const [timedlyrics, _] = useState([

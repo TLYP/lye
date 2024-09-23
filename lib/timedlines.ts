@@ -1,12 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import {
-    TimedLinesLine,
-    TimelineTarget,
-    TimedLines,
-    TimedLinesReferenceTimeline,
-    TimedLinesReferenceLine
-} from '@/app/cachedb/timedlines'
-import { Session, SessionReference } from '@/app/cachedb/sessions'
+import { TimedLinesLine, TimelineTarget } from '@/app/cachedb/timedlines'
 export { TimelineTarget }
 
 export type TimelineItemState = TimedLinesLine
