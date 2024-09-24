@@ -1,56 +1,25 @@
-import { useAppDispatch, useAppSelector } from '@/lib/hooks'
-import { Fragment, useEffect, useRef, useState } from 'react'
+import { useAppDispatch } from '@/lib/hooks'
+import { Fragment, useEffect, useRef } from 'react'
 import * as TimedLyricsAction from '@/lib/timedlyrics'
 import NoSpaceStepIcon from '@/app/components/icons/NoSpaceSep'
 import SpaceStepIcon from '@/app/components/icons/SpaceSep'
-import { TimedLyricLineData } from '../../cachedb/timedlyrics'
 import FocusEditorViewTimelineDetails from '../TimelineDetailsComponent'
+import { Switch } from '@mantine/core'
+import { useLocalState, StateEditorSlice } from '../LocalState'
 
-export default function TimedLyricEditor() {
-    const dispatch = useAppDispatch()
-    const activeLine = useAppSelector((state) => state.timedlyrics.activeLine)
-    const timedlines = useAppSelector((state) => state.timedlines)
-    const activeLyrics = useAppSelector((state) => state.lyrics.active)
-    const lines = useAppSelector((state) => state.timedlyrics.lines)
-    const [width, setWidth] = useState(0)
-    const [focusWidth, setFocusWidth] = useState(0)
-    const rootDiv = useRef<HTMLDivElement>(null)
-    const [target, setTarget] = useState<null | number>(null)
-    const [targetAction, setTargetAction] = useState<null | 'moving'>(null)
-    const [slices, setSlices] = useState<
-        Array<{
-            type: 'content' | 'nospace' | 'space'
-            width?: number
-            content?: string
-            targetIndex?: number
-        }>
-    >([])
-    const [line, setLine] = useState<TimedLyricLineData>([])
-
-    const [start, setStart] = useState(24 * 1000)
-    const [end, setEnd] = useState(34 * 1000)
-    const [duration, setDuration] = useState(end - start)
-
-    const detailTime = 1000
-    const extradetails = 16
-
-    useEffect(() => {
-        const item = [...timedlines.primary, ...timedlines.secondary].find(
-            (item) => item.linenumber == activeLine
-        )
-        if (!item) return
-
-        setStart(item.start)
-        setEnd(item.end)
-        setDuration(item.end - item.start)
-    }, [timedlines, activeLine])
-
-    useEffect(() => {
-        if (!activeLine) return
-
-        const lineitem = lines[activeLine]
-        setLine(lineitem ?? [])
-    }, [lines, activeLine])
+function EditorUpdateSlices() {
+    const {
+        activeLine,
+        activeLyrics,
+        editor: {
+            slicesState: { setSlices },
+            focusWidthState: { focusWidth }
+        },
+        lineStates: {
+            lineState: { line },
+            durationState: { duration }
+        }
+    } = useLocalState()
 
     useEffect(() => {
         if (focusWidth == 0) return
@@ -85,24 +54,78 @@ export default function TimedLyricEditor() {
         })
     }, [duration, focusWidth, line])
 
-    useEffect(() => {
-        if (!rootDiv.current) return
-        const w = rootDiv.current.getBoundingClientRect().width
-        setWidth(w)
-        const durationScaled = duration - (duration % detailTime) // properly scaled duration
-        const details = extradetails * Math.floor(durationScaled / detailTime) + 1
+    return <></>
+}
 
-        const gapsize = 5
-
-        setFocusWidth(w < gapsize * details ? gapsize * details : w)
-        // setFocusWidth(w * 1)
-    }, [rootDiv, width, duration])
+function SliceComponent({ idx, slice }: { idx: number; slice: StateEditorSlice[0] }) {
+    const {
+        mouseStates: {
+            targetState: { setTarget },
+            targetActionState: { setTargetAction }
+        }
+    } = useLocalState()
 
     const activateTarget = (index: number) => {
         setTarget(index)
         setTargetAction('moving')
     }
 
+    if (slice.type === 'content')
+        return (
+            <div
+                className="flex justify-center overflow-hidden rounded-sm"
+                style={{
+                    maxWidth: (slice.width ?? 0) - (idx / 2) * 1 ?? 'px',
+                    minWidth: (slice.width ?? 0) - (idx / 2) * 1 ?? 'px'
+                }}
+            >
+                <span className="text-base text-text-300 select-none">{slice.content}</span>
+            </div>
+        )
+    else if (slice.type == 'space')
+        return (
+            <div className="h-32 max-w-[2px] -top-4 opacity-35 relative bg-primary-400 flex justify-center">
+                <div
+                    onMouseDown={() => activateTarget(slice.targetIndex ?? 0)}
+                    className="flex items-center h-32 min-w-5 cursor-ew-resize"
+                >
+                    <div className="cursor-ew-resize flex items-end pb-1 fill-primary-400 absolute h-12">
+                        <SpaceStepIcon width={20} height={12} className="stroke-primary-400" />
+                    </div>
+                </div>
+            </div>
+        )
+    else
+        return (
+            <div className="h-32 max-w-[2px] -top-4 opacity-35 relative bg-primary-400 flex justify-center">
+                <div
+                    onMouseDown={() => activateTarget(slice.targetIndex ?? 0)}
+                    className="flex items-center h-32 min-w-5 cursor-ew-resize"
+                >
+                    <div className="flex -left-[8px] items-end pb-1 absolute h-12">
+                        <NoSpaceStepIcon width={24} height={14} className="stroke-primary-400" />
+                    </div>
+                </div>
+            </div>
+        )
+}
+
+function EditorMoveTimeDividers() {
+    const dispatch = useAppDispatch()
+    const {
+        editor: {
+            rootDiv,
+            widthState: { width }
+        },
+        lineStates: {
+            lineState: { line },
+            durationState: { duration }
+        },
+        mouseStates: {
+            targetState: { target, setTarget },
+            targetActionState: { targetAction, setTargetAction }
+        }
+    } = useLocalState()
     useEffect(() => {
         const handleMove = (x: number) => {
             if (target == null) return
@@ -145,12 +168,69 @@ export default function TimedLyricEditor() {
         }
     })
 
+    return <></>
+}
+
+function EditorUpdateWidth() {
+    const {
+        editor: {
+            rootDiv,
+            widthState: { width, setWidth },
+            focusWidthState: { setFocusWidth },
+            detailTimeState: { detailTime },
+            extradetailsState: { extradetails }
+        },
+        lineStates: {
+            durationState: { duration }
+        }
+    } = useLocalState()
+
+    useEffect(() => {
+        if (!rootDiv.current) return
+        const w = rootDiv.current.getBoundingClientRect().width
+        setWidth(w)
+        const durationScaled = duration - (duration % detailTime) // properly scaled duration
+        const details = extradetails * Math.floor(durationScaled / detailTime) + 1
+
+        const gapsize = 5
+
+        setFocusWidth(w < gapsize * details ? gapsize * details : w)
+    }, [rootDiv, width, duration])
+
+    return <></>
+}
+
+export default function TimedLyricEditor() {
+    const {
+        editor: {
+            rootDiv,
+            slicesState: { slices },
+            widthState: { width },
+            focusWidthState: { focusWidth },
+            detailTimeState: { detailTime },
+            extradetailsState: { extradetails }
+        },
+        lineStates: {
+            startState: { start },
+            endState: { end }
+        }
+    } = useLocalState()
+
     return (
         <div
             ref={rootDiv}
-            className="flex flex-col text-lg h-24 overflow-x-auto overflow-y-hidden w-full bg-background-800 bg-gradient-to-t from-background-900  to-95% to-background-950"
-            style={{ width: width == 0 ? '' : width + 'px' }}
+            className="flex flex-col text-lg h-32 overflow-x-auto overflow-y-hidden w-full bg-background-800 bg-gradient-to-t from-background-900  to-95% to-background-950"
+            style={{ minWidth: width == 0 ? '' : width + 'px' }}
         >
+            <EditorUpdateSlices />
+            <EditorMoveTimeDividers />
+            <EditorUpdateWidth />
+
+            <div className="flex min-h-8 bg-background-900 border-y-2 border-background-base w-full">
+                <div className="h-full w-16 flex justify-center items-center">
+                    <Switch color="gray" />
+                </div>
+            </div>
             <div
                 className="flex flex-col h-full overflow-hidden"
                 style={{ width: focusWidth + 'px' }}
@@ -167,53 +247,7 @@ export default function TimedLyricEditor() {
                 <div className="z-10 flex items-center h-16">
                     {slices.map((slice, idx) => (
                         <Fragment key={idx}>
-                            {slice.type == 'content' && (
-                                <div
-                                    className="flex justify-center  rounded-sm"
-                                    style={{
-                                        maxWidth: (slice.width ?? 0) - (idx / 2) * 1 ?? 'px',
-                                        minWidth: (slice.width ?? 0) - (idx / 2) * 1 ?? 'px'
-                                    }}
-                                >
-                                    <span className="text-base text-text-300 select-none">
-                                        {slice.content}
-                                    </span>
-                                </div>
-                            )}
-
-                            {slice.type == 'space' && (
-                                <div className="h-24 max-w-[2px] -top-4 opacity-35 relative bg-background-900 flex justify-center">
-                                    <div
-                                        onMouseDown={() => activateTarget(slice.targetIndex ?? 0)}
-                                        className="flex items-center h-24 min-w-5 cursor-ew-resize"
-                                    >
-                                        <div className="cursor-ew-resize flex items-end pb-1 fill-text-300 absolute h-12">
-                                            <SpaceStepIcon
-                                                width={20}
-                                                height={12}
-                                                className="stroke-text-500"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {slice.type == 'nospace' && (
-                                <div className="h-24 max-w-[2px] -top-4 opacity-35 relative bg-background-900 flex justify-center">
-                                    <div
-                                        onMouseDown={() => activateTarget(slice.targetIndex ?? 0)}
-                                        className="flex items-center h-24 min-w-5 cursor-ew-resize"
-                                    >
-                                        <div className="flex -left-[8px] items-end pb-1 fill-text-300 absolute h-12">
-                                            <NoSpaceStepIcon
-                                                width={24}
-                                                height={14}
-                                                className="stroke-text-500"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
+                            <SliceComponent slice={slice} idx={idx} />
                         </Fragment>
                     ))}
                 </div>
