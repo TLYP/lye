@@ -1,11 +1,12 @@
 import { useAppDispatch } from '@/lib/hooks'
-import { Fragment, useEffect, useRef } from 'react'
+import { Fragment, useEffect, useRef, useState } from 'react'
 import * as TimedLyricsAction from '@/lib/timedlyrics'
 import NoSpaceStepIcon from '@/app/components/icons/NoSpaceSep'
 import SpaceStepIcon from '@/app/components/icons/SpaceSep'
 import FocusEditorViewTimelineDetails from '../TimelineDetailsComponent'
-import { Switch } from '@mantine/core'
+import { ActionIcon, Switch } from '@mantine/core'
 import { useLocalState, StateEditorSlice } from '../LocalState'
+import { IconAdjustments } from '@tabler/icons-react'
 
 function EditorUpdateSlices() {
     const {
@@ -200,11 +201,37 @@ function EditorUpdateWidth() {
     return <></>
 }
 
+function EditorSlices() {
+    const {
+        editor: {
+            slicesState: { slices }
+        }
+    } = useLocalState()
+
+    return (
+        <>
+            {slices.map((slice, idx) => (
+                <Fragment key={idx}>
+                    <SliceComponent slice={slice} idx={idx} />
+                </Fragment>
+            ))}
+        </>
+    )
+}
+
+function EditorAddDividers() {
+    const { activeLine, activeLyrics } = useLocalState()
+
+    const lyric = activeLyrics.find((item) => item[0] == activeLine)?.[1]
+    if (!lyric) return
+
+    return <></>
+}
+
 export default function TimedLyricEditor() {
     const {
         editor: {
             rootDiv,
-            slicesState: { slices },
             widthState: { width },
             focusWidthState: { focusWidth },
             detailTimeState: { detailTime },
@@ -215,6 +242,8 @@ export default function TimedLyricEditor() {
             endState: { end }
         }
     } = useLocalState()
+
+    const [checked, setChecked] = useState(false)
 
     return (
         <div
@@ -228,29 +257,37 @@ export default function TimedLyricEditor() {
 
             <div className="flex min-h-8 bg-background-900 border-y-2 border-background-base w-full">
                 <div className="h-full w-16 flex justify-center items-center">
-                    <Switch color="gray" />
+                    <Switch
+                        checked={checked}
+                        onChange={(e) => setChecked(e.currentTarget.checked)}
+                        color="gray"
+                    />
                 </div>
             </div>
             <div
                 className="flex flex-col h-full overflow-hidden"
                 style={{ width: focusWidth + 'px' }}
             >
-                <div className="flex h-6">
-                    <FocusEditorViewTimelineDetails
-                        start={start}
-                        end={end}
-                        width={focusWidth}
-                        detailTime={detailTime}
-                        edetails={extradetails}
-                    />
-                </div>
-                <div className="z-10 flex items-center h-16">
-                    {slices.map((slice, idx) => (
-                        <Fragment key={idx}>
-                            <SliceComponent slice={slice} idx={idx} />
-                        </Fragment>
-                    ))}
-                </div>
+                {checked ? (
+                    <div className="h-[6rem]">
+                        <EditorAddDividers />
+                    </div>
+                ) : (
+                    <>
+                        <div className="flex h-6">
+                            <FocusEditorViewTimelineDetails
+                                start={start}
+                                end={end}
+                                width={focusWidth}
+                                detailTime={detailTime}
+                                edetails={extradetails}
+                            />
+                        </div>
+                        <div className="z-10 flex items-center h-16">
+                            <EditorSlices />
+                        </div>
+                    </>
+                )}
             </div>
         </div>
     )
