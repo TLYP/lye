@@ -38,11 +38,10 @@ export function LoadRelevantState() {
         dispatch(TimedLyricsAction.setActive(4))
         const data: Record<string, TimedLyricLineData> = {
             4: [
-                { offset: 4, type: 'space', time: 1 * 1000 },
-                { offset: 8, type: 'nospace', time: 2 * 1000 },
+                { offset: 5, type: 'space', time: 1 * 1000 },
+                { offset: 10, type: 'nospace', time: 2 * 1000 },
                 { offset: 14, type: 'space', time: 3 * 1000 },
-                { offset: 22, type: 'space', time: 4 * 1000 },
-                { offset: 24, type: 'nospace', time: 5 * 1000 }
+                { offset: 21, type: 'space', time: 4 * 1000 }
             ]
         }
         dispatch(TimedLyricsAction.loadAll(data))

@@ -133,7 +133,7 @@ export default function Component() {
                 )}
             </div>
 
-            <div className="flex flex-col min-w-[500px] h-12 ">
+            <div className="flex flex-col min-w-[300px] h-12 ">
                 <div className="flex items-end min-w-full h-6 ">
                     <span className="text-text-100">{session?.name}</span>
                 </div>
