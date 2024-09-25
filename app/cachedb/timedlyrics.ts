@@ -54,7 +54,10 @@ export class TimedLyric {
 }
 
 export class TimedLyricReference {
-    constructor(private data: TimedLyricData, private db: IDBDatabase) {}
+    constructor(
+        private data: TimedLyricData,
+        private db: IDBDatabase
+    ) {}
 
     public serialize() {
         return this.data
