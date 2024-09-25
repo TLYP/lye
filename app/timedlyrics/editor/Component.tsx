@@ -58,6 +58,23 @@ function EditorUpdateSlices() {
     return <></>
 }
 
+function SliceContentComponent({ idx, slice }: { idx: number; slice: StateEditorSlice[0] }) {
+    return (
+        <div
+            className="flex justify-center overflow-hidden rounded-sm"
+            id={'slice-content-item'}
+            style={{
+                maxWidth: (slice.width ?? 0) - (idx / 2) * 1 ?? 'px',
+                minWidth: (slice.width ?? 0) - (idx / 2) * 1 ?? 'px'
+            }}
+        >
+            <div>
+                <span className="text-base text-text-300 select-none">{slice.content}</span>
+            </div>
+        </div>
+    )
+}
+
 function SliceComponent({ idx, slice }: { idx: number; slice: StateEditorSlice[0] }) {
     const {
         mouseStates: {
@@ -71,18 +88,7 @@ function SliceComponent({ idx, slice }: { idx: number; slice: StateEditorSlice[0
         setTargetAction('moving')
     }
 
-    if (slice.type === 'content')
-        return (
-            <div
-                className="flex justify-center overflow-hidden rounded-sm"
-                style={{
-                    maxWidth: (slice.width ?? 0) - (idx / 2) * 1 ?? 'px',
-                    minWidth: (slice.width ?? 0) - (idx / 2) * 1 ?? 'px'
-                }}
-            >
-                <span className="text-base text-text-300 select-none">{slice.content}</span>
-            </div>
-        )
+    if (slice.type === 'content') return <SliceContentComponent idx={idx} slice={slice} />
     else if (slice.type == 'space')
         return (
             <div className="h-32 max-w-[2px] -top-4 opacity-35 relative bg-primary-400 flex justify-center">
@@ -220,12 +226,44 @@ function EditorSlices() {
 }
 
 function EditorAddDividers() {
-    const { activeLine, activeLyrics } = useLocalState()
+    const {
+        activeLine,
+        activeLyrics,
+        lineStates: {
+            lineState: { line, setLine }
+        }
+    } = useLocalState()
 
     const lyric = activeLyrics.find((item) => item[0] == activeLine)?.[1]
     if (!lyric) return
 
-    return <></>
+    const lyricItems = lyric.split('')
+
+    const findSlice = (offset: number) => {
+        line.map((item) => item.offset == offset)
+    }
+
+    return (
+        <div className="h-full w-full flex items-center justify-center">
+            {lyricItems.map((item, idx) => (
+                <Fragment key={idx}>
+                    <span className="text-text-200 text-xl select-none">{item}</span>
+                    <div
+                        style={{
+                            display:
+                                item.trim() === '' || idx == lyric.split('').length - 1
+                                    ? 'none'
+                                    : 'flex',
+                            minWidth: lyricItems[idx + 1]?.trim() === '' ? '1.75rem' : '0.50rem'
+                        }}
+                        className="flex justify-center items-center h-32 cursor-pointer"
+                    >
+                        <div className="w-[2px] h-[2px] bg-text-500"></div>
+                    </div>
+                </Fragment>
+            ))}
+        </div>
+    )
 }
 
 export default function TimedLyricEditor() {
@@ -269,7 +307,7 @@ export default function TimedLyricEditor() {
                 style={{ width: focusWidth + 'px' }}
             >
                 {checked ? (
-                    <div className="h-[6rem]">
+                    <div className="h-[6rem] w-full">
                         <EditorAddDividers />
                     </div>
                 ) : (
