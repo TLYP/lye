@@ -36,7 +36,7 @@ export class Lyric {
 
         const lyrics = []
 
-        for (let lyricItem of await getAll(db)) {
+        for (const lyricItem of await getAll(db)) {
             lyrics.push(await Lyric.get(lyricItem.uuid))
         }
 
@@ -51,7 +51,10 @@ export class Lyric {
 }
 
 export class LyricReference {
-    constructor(private data: LyricData, private db: IDBDatabase) {}
+    constructor(
+        private data: LyricData,
+        private db: IDBDatabase
+    ) {}
 
     public serialize() {
         return this.data

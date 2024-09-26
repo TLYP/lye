@@ -95,7 +95,7 @@ export default function Page() {
             }
         }
 
-        let v = updates.map((t) => {
+        const v = updates.map((t) => {
             if (t[0] == t[1]) return t[2] ? '+' : ' '
 
             const item =

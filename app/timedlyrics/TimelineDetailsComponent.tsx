@@ -84,7 +84,7 @@ export default function FocusEditorViewTimelineDetails({
             })}
 
             {Array.from({ length: details + 1 }).map((_, i) => {
-                let left = ostart + i * pgap
+                const left = ostart + i * pgap
                 return (
                     <Fragment key={i}>
                         {i % extradetails === 0 && (

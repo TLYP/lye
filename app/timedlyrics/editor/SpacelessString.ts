@@ -61,7 +61,7 @@ export class SpacelessString {
     }
 
     public spacelessSlice(start: number, end?: number) {
-        let scontent = this.content.slice(start, end)
+        const scontent = this.content.slice(start, end)
         let offsetspacemap = this.offsetSpaceMap.filter((item) => item >= start)
         if (end !== undefined) offsetspacemap = offsetspacemap.filter((item) => item <= end)
         let content = ''
@@ -70,7 +70,7 @@ export class SpacelessString {
 
         let v = 0
         for (let i = 0; i < offsetspacemap.length; i++) {
-            let h = offsetspacemap[i]
+            const h = offsetspacemap[i]
             content += scontent.slice(v, h) + ' '
             v = h
         }

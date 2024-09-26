@@ -16,7 +16,7 @@ function LoadActiveLyric() {
         const lyric = everyLyrics.find((i) => i.uuid == activeSession?.lyricRef)
         if (!lyric) return
 
-        let data = lyric.lines.map((i) => i['content'])
+        const data = lyric.lines.map((i) => i['content'])
         let ndata = data.map((item, i) => [i + 1, item]) as Array<[number, string]>
         ndata = ndata.filter((item) => !item[1].startsWith('['))
         ndata = ndata.filter((item) => !(item[1].trim() === ''))

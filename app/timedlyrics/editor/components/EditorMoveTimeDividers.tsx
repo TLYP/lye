@@ -27,7 +27,7 @@ export default function Component() {
             if (target == null) return
 
             document.body.style.setProperty('cursor', 'ew-resize', 'important')
-            let item = { ...line[target] }
+            const item = { ...line[target] }
             const xr = x / width
             let time = xr * duration
 
@@ -43,9 +43,9 @@ export default function Component() {
 
         const mousemoveHandler = (e: MouseEvent) => {
             if (targetAction == null) return
-            let left = rootDiv.current?.getBoundingClientRect().left ?? 0
+            const left = rootDiv.current?.getBoundingClientRect().left ?? 0
             const x = e.clientX
-            let ox = x - left < 0 ? 0 : x - left
+            const ox = x - left < 0 ? 0 : x - left
             handleMove(ox)
         }
 

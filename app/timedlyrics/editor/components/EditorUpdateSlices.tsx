@@ -21,7 +21,7 @@ export default function EditorUpdateSlices() {
         if (focusWidth == 0) return
         let oset = 0
         let pt = 0
-        let nslices = []
+        const nslices = []
 
         const lyric = activeLyrics.find((item) => item[0] == activeLine)?.[1]
         if (!lyric) return

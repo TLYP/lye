@@ -48,7 +48,7 @@ export class TimedLines {
 
         const lyrics = []
 
-        for (let lyricItem of await getAll(db)) {
+        for (const lyricItem of await getAll(db)) {
             lyrics.push(await TimedLines.get(lyricItem.uuid))
         }
 
@@ -63,7 +63,10 @@ export class TimedLines {
 }
 
 export class TimedLinesReference {
-    constructor(private data: TimedLineData, private db: IDBDatabase) {}
+    constructor(
+        private data: TimedLineData,
+        private db: IDBDatabase
+    ) {}
 
     public serialize() {
         return this.data
@@ -87,7 +90,10 @@ export class TimedLinesReference {
 }
 
 export class TimedLinesReferenceTimeline {
-    constructor(public data: TimedLineData['timelines'], private target: TimelineTarget) {}
+    constructor(
+        public data: TimedLineData['timelines'],
+        private target: TimelineTarget
+    ) {}
 
     public addLine(line: TimedLinesLine) {
         this.data[this.target].push(line)

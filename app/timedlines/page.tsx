@@ -11,14 +11,14 @@ import { TimedLinesReferenceLine } from '../cachedb/timedlines'
 export function formattedMS(milliseconds?: number) {
     if (milliseconds == undefined) return '--:--.---'
 
-    let ms = Math.round(milliseconds) % 1000
-    let seconds = Math.floor((milliseconds / 1000) % 60)
-    let minutes = Math.floor(milliseconds / 1000 / 60)
+    const ms = Math.round(milliseconds) % 1000
+    const seconds = Math.floor((milliseconds / 1000) % 60)
+    const minutes = Math.floor(milliseconds / 1000 / 60)
 
     // let fms = ms < 10 ? '.00' + ms : ms < 100 ? '.0' + ms : '.' + ms
     // if (ms == 0) fms = ''
 
-    let fms = ms < 10 ? '.00' + ms : ms < 100 ? '.0' + ms : '.' + ms
+    const fms = ms < 10 ? '.00' + ms : ms < 100 ? '.0' + ms : '.' + ms
 
     return `${minutes < 10 ? '0' + minutes : minutes}:${
         seconds < 10 ? '0' + seconds : seconds

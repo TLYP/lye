@@ -144,7 +144,7 @@ export default function FocusEditorView({
         setDefaultWidth(rootDiv.current.getBoundingClientRect().width)
 
         const handleScroll = () => setScrollLeft(rootDiv.current!.scrollLeft)
-        let element = rootDiv.current
+        const element = rootDiv.current
         element.addEventListener('scroll', handleScroll)
 
         return () => {

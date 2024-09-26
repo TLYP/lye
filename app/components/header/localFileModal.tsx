@@ -238,7 +238,7 @@ export function ReviewMusic({ song }: { song: Song }) {
     useEffect(() => {
         if (song.preview_url == undefined) return
 
-        let audio = new Audio()
+        const audio = new Audio()
         audio.src = song.preview_url
 
         setAudio(audio)

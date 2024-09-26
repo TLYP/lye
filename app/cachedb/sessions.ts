@@ -60,7 +60,7 @@ export class Session {
 
         const sessions = []
 
-        for (let sessionItem of await getAll(db)) {
+        for (const sessionItem of await getAll(db)) {
             sessions.push(await Session.get(sessionItem.uuid))
         }
 
