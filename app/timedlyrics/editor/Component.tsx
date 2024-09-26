@@ -1,5 +1,5 @@
 import { useAppDispatch } from '@/lib/hooks'
-import { Fragment, useEffect, useRef, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import * as TimedLyricsAction from '@/lib/timedlyrics'
 import NoSpaceStepIcon from '@/app/components/icons/NoSpaceSep'
 import SpaceStepIcon from '@/app/components/icons/SpaceSep'
@@ -225,40 +225,124 @@ function EditorSlices() {
     )
 }
 
+class SpacelessString {
+    constructor(
+        public offsetSpaceMap: Array<number>, // spacemap that fits spaceless text
+        public spaceMap: Array<number>, // spacemap that fits original text
+        public content: string,
+        public length: number
+    ) {}
+
+    public toString() {
+        let content = ''
+        const charset = this.content.split('')
+
+        for (let i = 0; i < charset.length; i++) {
+            const it = this.offsetSpaceMap.findIndex((item) => item == i)
+
+            if (it !== -1) {
+                content += ' '
+            }
+
+            content += charset[i]
+        }
+
+        return content
+    }
+
+    public static from(text: string) {
+        const spacemap = []
+        const offsetspacemap = []
+        const charset = text.split('')
+        let content = ''
+
+        let h = 0
+        for (let i = 0; i < charset.length; i++) {
+            const char = charset[i]
+            if (char.trim() == '') {
+                spacemap.push(i)
+                offsetspacemap.push(i - h)
+                h++
+            } else content += char
+        }
+
+        return new SpacelessString(offsetspacemap, spacemap, content, charset.length)
+    }
+
+    public remapIndex(index: number): number {
+        const spaces = this.spaceMap.filter((item) => index > item)
+        return index - spaces.length
+    }
+
+    public chars() {
+        return this.toString()
+    }
+
+    public slice(start: number, end?: number) {
+        return SpacelessString.from(this.toString().slice(start, end))
+    }
+}
+
 function EditorAddDividers() {
     const {
         activeLine,
         activeLyrics,
         lineStates: {
-            lineState: { line, setLine }
+            lineState: { line }
         }
     } = useLocalState()
 
-    const lyric = activeLyrics.find((item) => item[0] == activeLine)?.[1]
-    if (!lyric) return
+    const lyric = activeLyrics.find((item) => item[0] == activeLine)?.[1]!
 
-    const lyricItems = lyric.split('')
+    const slyric = SpacelessString.from(lyric)
+    const oline = line.map((item) => {
+        return {
+            ...item,
+            offset: slyric.remapIndex(item.offset)
+        }
+    })
 
-    const findSlice = (offset: number) => {
-        line.map((item) => item.offset == offset)
+    const hasLine = (idx: number) => {
+        return oline.findIndex((item) => item.offset == idx) !== -1
     }
+    const typeLine = (idx: number) => {
+        return oline.find((item) => item.offset == idx)?.type
+    }
+
+    useEffect(() => {
+        const of = line.map((item) => slyric.remapIndex(item.offset))
+        console.log(of)
+    }, [lyric, line, slyric])
 
     return (
         <div className="h-full w-full flex items-center justify-center">
-            {lyricItems.map((item, idx) => (
+            {slyric.content.split('').map((char, idx) => (
                 <Fragment key={idx}>
-                    <span className="text-text-200 text-xl select-none">{item}</span>
+                    <span
+                        style={
+                            {
+                                // display: item.type == 'content' ? 'flex' : 'none'
+                            }
+                        }
+                        className="text-text-200 text-xl select-none"
+                    >
+                        {char}
+                    </span>
                     <div
                         style={{
-                            display:
-                                item.trim() === '' || idx == lyric.split('').length - 1
-                                    ? 'none'
-                                    : 'flex',
-                            minWidth: lyricItems[idx + 1]?.trim() === '' ? '1.75rem' : '0.50rem'
+                            // display: item.type !== 'content' ? 'flex' : 'none',
+                            minWidth: new Set(slyric.offsetSpaceMap).has(idx + 1)
+                                ? '1.75rem'
+                                : '0.50rem'
                         }}
-                        className="flex justify-center items-center h-32 cursor-pointer"
+                        className="flex flex-col gap-1 justify-center items-center h-32 cursor-pointer"
                     >
-                        <div className="w-[2px] h-[2px] bg-text-500"></div>
+                        <div
+                            className="w-[2px] h-[2px] bg-text-500"
+                            style={{
+                                display: hasLine(idx + 1) ? 'flex' : 'none'
+                            }}
+                        ></div>
                     </div>
                 </Fragment>
             ))}
