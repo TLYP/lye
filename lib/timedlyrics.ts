@@ -27,15 +27,28 @@ export const TimedLyricsSlice = createSlice({
             if (!line) return
             line[action.payload.index] = action.payload.content
         },
-        add(state, action: PayloadAction<{ atIndex: number; content: TimedLyricLineItemData }>) {
+        add(state, action: PayloadAction<{ atIndex?: number; content: TimedLyricLineItemData }>) {
+            if (!state.activeLine) return
+            let line = state.lines[state.activeLine]
+            if (!line) {
+                state.lines[state.activeLine] = []
+                line = state.lines[state.activeLine]
+            }
+
+            if (action.payload.atIndex !== undefined)
+                line = [
+                    ...line.slice(0, action.payload.atIndex),
+                    action.payload.content,
+                    ...line.slice(action.payload.atIndex)
+                ]
+            else line.push(action.payload.content)
+        },
+        sort(state) {
             if (!state.activeLine) return
             let line = state.lines[state.activeLine]
             if (!line) return
-            line = [
-                ...line.slice(0, action.payload.atIndex),
-                action.payload.content,
-                ...line.slice(action.payload.atIndex)
-            ]
+
+            state.lines[state.activeLine] = line.sort((a, b) => a.offset - b.offset)
         },
         remove(state, action: PayloadAction<{ index: number }>) {
             if (!state.activeLine) return
@@ -47,5 +60,5 @@ export const TimedLyricsSlice = createSlice({
     }
 })
 
-export const { loadAll, setActive, update, add, remove } = TimedLyricsSlice.actions
+export const { loadAll, setActive, update, add, sort, remove } = TimedLyricsSlice.actions
 export default TimedLyricsSlice.reducer

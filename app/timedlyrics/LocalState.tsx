@@ -11,6 +11,7 @@ import {
     useState
 } from 'react'
 import { TimedLyricLineData } from '../cachedb/timedlyrics'
+import { Session, SessionReference } from '../cachedb/sessions'
 
 export type StateEditorSlice = Array<{
     type: 'content' | 'nospace' | 'space'
@@ -20,6 +21,7 @@ export type StateEditorSlice = Array<{
 }>
 
 export type State = {
+    session: SessionReference | null
     activeLine: number | null
     timedlines: TimedLinesState
     activeLyrics: Array<[number, string]>
@@ -75,6 +77,7 @@ export type State = {
 }
 
 const Context = createContext<State>({
+    session: null,
     activeLine: null,
     timedlines: { primary: [], secondary: [] },
     activeLyrics: [],
@@ -127,6 +130,8 @@ const Context = createContext<State>({
 })
 
 export function LocalStateProvider({ children }: { children: React.ReactNode }) {
+    const activeSession = useAppSelector((state) => state.sessions.activeSession)
+    const [session, setSession] = useState<SessionReference | null>(null)
     const activeLine = useAppSelector((state) => state.timedlyrics.activeLine)
     const timedlines = useAppSelector((state) => state.timedlines)
     const activeLyrics = useAppSelector((state) => state.lyrics.active)
@@ -145,6 +150,16 @@ export function LocalStateProvider({ children }: { children: React.ReactNode }) 
 
     const [target, setTarget] = useState<null | number>(null)
     const [targetAction, setTargetAction] = useState<null | 'moving'>(null)
+
+    useEffect(() => {
+        const fn = async () => {
+            if (!activeSession) return
+            const session = await Session.get(activeSession.uuid)
+            setSession(session)
+        }
+
+        fn()
+    }, [activeSession])
 
     useEffect(() => {
         const item = [...timedlines.primary, ...timedlines.secondary].find(
@@ -167,6 +182,7 @@ export function LocalStateProvider({ children }: { children: React.ReactNode }) 
     return (
         <Context.Provider
             value={{
+                session,
                 activeLine,
                 timedlines,
                 activeLyrics,

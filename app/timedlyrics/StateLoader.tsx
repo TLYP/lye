@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 import * as TimedLyricsAction from '@/lib/timedlyrics'
 import * as TimedlinesActions from '@/lib/timedlines'
 import * as LyricsActions from '@/lib/lyrics'
-import { TimedLyricLineData } from '../cachedb/timedlyrics'
+import { TimedLyricLineData, TimedLyric } from '../cachedb/timedlyrics'
 import { Session } from '../cachedb/sessions'
 
 function LoadActiveLyric() {
@@ -35,19 +35,6 @@ export function LoadRelevantState() {
     const everyLyrics = useAppSelector((state) => state.lyrics.lyrics)
 
     useEffect(() => {
-        dispatch(TimedLyricsAction.setActive(4))
-        const data: Record<string, TimedLyricLineData> = {
-            4: [
-                { offset: 5, type: 'space', time: 1 * 1000 },
-                { offset: 10, type: 'nospace', time: 2 * 1000 },
-                { offset: 14, type: 'space', time: 3 * 1000 },
-                { offset: 21, type: 'space', time: 4 * 1000 }
-            ]
-        }
-        dispatch(TimedLyricsAction.loadAll(data))
-    }, [])
-
-    useEffect(() => {
         if (everyLyrics == null) return
         const lyric = everyLyrics.find((i) => i.uuid == activeSession?.lyricRef)
         if (!lyric) return
@@ -61,7 +48,9 @@ export function LoadRelevantState() {
 
             const session = await Session.get(activeSession.uuid)
             const timedlines = session.timedlines.serialize().timelines
+            const timedlyrics = session.timedlyrics.serialize()
 
+            dispatch(TimedLyricsAction.loadAll(timedlyrics.lines))
             dispatch(TimedlinesActions.loadAll(timedlines))
         })()
     }, [everyLyrics, activeSession])

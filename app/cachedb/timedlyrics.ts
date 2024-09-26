@@ -54,13 +54,22 @@ export class TimedLyric {
 }
 
 export class TimedLyricReference {
-    constructor(
-        private data: TimedLyricData,
-        private db: IDBDatabase
-    ) {}
+    constructor(private data: TimedLyricData, private db: IDBDatabase) {}
 
     public serialize() {
         return this.data
+    }
+
+    public get uuid() {
+        return this.data['uuid']
+    }
+
+    public set lines(value: Record<number, TimedLyricLineData>) {
+        this.data['lines'] = value
+    }
+
+    public get lines() {
+        return this.data['lines']
     }
 
     public async update() {

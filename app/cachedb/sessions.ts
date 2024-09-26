@@ -2,6 +2,7 @@ import { getDatabase } from '.'
 import { File, FileReference } from './file'
 import { Lyric, LyricReference } from './lyrics'
 import { TimedLines, TimedLinesReference } from './timedlines'
+import { TimedLyric, TimedLyricReference } from './timedlyrics'
 
 const TABLE_NAME = 'sessions'
 
@@ -11,15 +12,14 @@ export type SessionData = {
     fileRef: string
     lyricRef: string
     timedlinesRef: string
-    // metadataRef: string
-    // timedLinesRef: string
-    // timedLyricsRef: string
+    timedlyricsRef: string
 }
 
 export type SessionDataRefs = {
     file: FileReference
     lyric: LyricReference
     timedlines: TimedLinesReference
+    timedlyrics: TimedLyricReference
 }
 
 export class Session {
@@ -32,8 +32,9 @@ export class Session {
         const file = await File.get(this.data.fileRef)
         const lyric = await Lyric.get(this.data.lyricRef)
         const timedlines = await TimedLines.get(this.data.timedlinesRef)
+        const timedlyrics = await TimedLyric.get(this.data.timedlyricsRef)
 
-        return new SessionReference(this.data, { file, lyric, timedlines }, db)
+        return new SessionReference(this.data, { file, lyric, timedlines, timedlyrics }, db)
     }
 
     // statics
@@ -45,9 +46,10 @@ export class Session {
         return new SessionReference(
             data,
             {
-                file: await File.get(data.fileRef),
-                lyric: await Lyric.get(data.lyricRef),
-                timedlines: await TimedLines.get(data.timedlinesRef)
+                file: await File.get(data.fileRef, db),
+                lyric: await Lyric.get(data.lyricRef, db),
+                timedlines: await TimedLines.get(data.timedlinesRef, db),
+                timedlyrics: await TimedLyric.get(data.timedlyricsRef, db)
             },
             db
         )
@@ -108,6 +110,10 @@ export class SessionReference {
 
     public get timedlines() {
         return this.refs['timedlines']
+    }
+
+    public get timedlyrics() {
+        return this.refs['timedlyrics']
     }
 
     public get name() {
