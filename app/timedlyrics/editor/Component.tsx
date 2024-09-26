@@ -1,13 +1,15 @@
-import { useAppDispatch } from '@/lib/hooks'
+import { useAppDispatch, useAppSelector } from '@/lib/hooks'
 import { Fragment, useEffect, useState } from 'react'
 import * as TimedLyricsAction from '@/lib/timedlyrics'
+import PlayIcon from '@/app/components/icons/play'
+import PauseIcon from '@/app/components/icons/pause'
 import NoSpaceStepIcon from '@/app/components/icons/NoSpaceSep'
 import SpaceStepIcon from '@/app/components/icons/SpaceSep'
 import FocusEditorViewTimelineDetails from '../TimelineDetailsComponent'
-import { ActionIcon, Switch } from '@mantine/core'
+import { Switch } from '@mantine/core'
 import { useLocalState, StateEditorSlice } from '../LocalState'
-import { IconAdjustments } from '@tabler/icons-react'
 import { TimedLyricLineItemData } from '@/app/cachedb/timedlyrics'
+import * as AudioPlayerActions from '@/lib/audioplayer'
 
 function EditorUpdateSlices() {
     const {
@@ -423,6 +425,7 @@ function EditorAddDividers() {
 }
 
 export default function TimedLyricEditor() {
+    const dispatch = useAppDispatch()
     const {
         editor: {
             rootDiv,
@@ -433,9 +436,12 @@ export default function TimedLyricEditor() {
         },
         lineStates: {
             startState: { start },
-            endState: { end }
+            endState: { end },
+            durationState: { duration }
         }
     } = useLocalState()
+    const paused = useAppSelector((state) => state.audioPlayer.audio?.paused ?? true)
+    const currentTime = useAppSelector((state) => state.audioPlayer.audio?.currentTime ?? 0)
 
     const [checked, setChecked] = useState(false)
 
@@ -453,18 +459,47 @@ export default function TimedLyricEditor() {
             <EditorUpdateWidth />
 
             <div className="flex min-h-8 bg-background-900 border-y-2 border-background-base w-full">
+                <div
+                    className="flex items-center justify-center h-full py-1 w-12 cursor-pointer"
+                    onClick={() => {
+                        if (paused) {
+                            dispatch(AudioPlayerActions.play())
+                            dispatch(AudioPlayerActions.setCurrentTime(Math.floor(start / 1000)))
+                        } else dispatch(AudioPlayerActions.pause())
+                    }}
+                >
+                    {paused ? (
+                        <PlayIcon className="stroke-text-300" />
+                    ) : (
+                        <PauseIcon className="stroke-text-300" />
+                    )}
+                </div>
                 <div className="h-full w-16 flex justify-center items-center">
                     <Switch
                         checked={checked}
-                        onChange={(e) => setChecked(e.currentTarget.checked)}
+                        onChange={(e) => {
+                            setChecked(e.currentTarget.checked)
+                            dispatch(AudioPlayerActions.pause())
+                        }}
                         color="gray"
                     />
                 </div>
             </div>
             <div
-                className="flex flex-col h-full overflow-hidden"
+                className="flex flex-col h-full overflow-hidden relative"
                 style={{ width: focusWidth + 'px' }}
             >
+                <div
+                    className="absolute h-full w-[3px] bg-text-500"
+                    style={{
+                        display:
+                            currentTime > start / 1000 && currentTime < end / 1000
+                                ? 'flex'
+                                : 'none',
+                        left: ((currentTime - start / 1000) / (duration / 1000)) * focusWidth + 'px'
+                    }}
+                ></div>
+
                 {checked ? (
                     <div className="h-[6rem] w-full">
                         <EditorAddDividers />
