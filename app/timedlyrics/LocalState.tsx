@@ -76,58 +76,7 @@ export type State = {
     }
 }
 
-const Context = createContext<State>({
-    session: null,
-    activeLine: null,
-    timedlines: { primary: [], secondary: [] },
-    activeLyrics: [],
-    lines: {},
-    editor: {
-        rootDiv: null as any,
-        slicesState: {
-            slices: [],
-            setSlices: () => {}
-        },
-        widthState: {
-            width: 0,
-            setWidth: () => {}
-        },
-        focusWidthState: {
-            focusWidth: 0,
-            setFocusWidth: () => {}
-        },
-        detailTimeState: {
-            detailTime: 0,
-            setDetailTime: () => {}
-        },
-        extradetailsState: {
-            extradetails: 0,
-            setExtradetails: () => {}
-        }
-    },
-    lineStates: {
-        lineState: {
-            line: [],
-            setLine: () => {}
-        },
-        startState: {
-            start: 0,
-            setStart: () => {}
-        },
-        endState: {
-            end: 0,
-            setEnd: () => {}
-        },
-        durationState: {
-            duration: 0,
-            setDuration: () => {}
-        }
-    },
-    mouseStates: {
-        targetState: { target: null, setTarget: () => {} },
-        targetActionState: { targetAction: null, setTargetAction: () => {} }
-    }
-})
+const Context = createContext<State>({} as any)
 
 export function LocalStateProvider({ children }: { children: React.ReactNode }) {
     const activeSession = useAppSelector((state) => state.sessions.activeSession)

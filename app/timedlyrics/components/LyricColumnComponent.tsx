@@ -1,6 +1,7 @@
 'use client'
 import { useAppDispatch, useAppSelector } from '@/lib/hooks'
 import * as TimedLyricsAction from '@/lib/timedlyrics'
+import * as AudioPlayerActions from '@/lib/audioplayer'
 import TimedLyricEditor from '../editor/Component'
 
 export default function Component({ linenumber, lyric }: { linenumber: number; lyric: string }) {
@@ -22,6 +23,7 @@ export default function Component({ linenumber, lyric }: { linenumber: number; l
             onClick={() => {
                 if (activeLine == linenumber || !hasLine()) return
                 dispatch(TimedLyricsAction.setActive(linenumber))
+                dispatch(AudioPlayerActions.pause())
             }}
             className="border-background-950 min-w-[700px] border-y-[1px] flex flex-col w-full"
             style={{
