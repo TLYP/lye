@@ -49,7 +49,7 @@
         "typescript-eslint": "^8.7.0"
     },
     "lint-staged": {
-        "*.{ts,tsx}": [
+        "**/*.{ts,tsx}": [
             "prettier --write",
             "eslint --max-warnings 0 ."
         ]
