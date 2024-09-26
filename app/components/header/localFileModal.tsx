@@ -32,6 +32,7 @@ import * as Lyrics from '@/lib/lyrics'
 import * as TimedLines from '@/lib/timedlines'
 import { useAppDispatch } from '@/lib/hooks'
 import { Lyric } from '@/app/cachedb/lyrics'
+import { TimedLyric } from '@/app/cachedb/timedlyrics'
 
 function MusicCard({ song, onClick }: { song: Song; onClick: (song: Song) => void }) {
     return (
@@ -333,10 +334,15 @@ export default function Component({ close, opened }: { opened: boolean; close: (
             }
         }).save()
 
+        const timedlyrics = await TimedLyric.from({
+            lines: {}
+        }).save()
+
         const session = await Session.from({
             fileRef: cacheFile.uuid,
             lyricRef: lyric.uuid,
             timedlinesRef: timedlines.uuid,
+            timedlyricsRef: timedlyrics.uuid,
             name: selectedTrack?.name!
         }).save()
 

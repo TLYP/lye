@@ -7,6 +7,7 @@ import FocusEditorViewTimelineDetails from '../TimelineDetailsComponent'
 import { ActionIcon, Switch } from '@mantine/core'
 import { useLocalState, StateEditorSlice } from '../LocalState'
 import { IconAdjustments } from '@tabler/icons-react'
+import { TimedLyricLineItemData } from '@/app/cachedb/timedlyrics'
 
 function EditorUpdateSlices() {
     const {
@@ -30,12 +31,13 @@ function EditorUpdateSlices() {
 
         const lyric = activeLyrics.find((item) => item[0] == activeLine)?.[1]
         if (!lyric) return
+        const slyric = SpacelessString.from(lyric)
 
         for (let i = 0; i < line.length; i++) {
             const timedlyric = line[i]
             nslices.push({
                 type: 'content',
-                content: lyric.slice(oset, timedlyric.offset).trim(),
+                content: slyric.spacelessSlice(oset, timedlyric.offset).toString().trim(),
                 width: ((timedlyric.time - pt) / duration) * focusWidth
             })
             nslices.push({ type: timedlyric.type, targetIndex: i })
@@ -46,7 +48,7 @@ function EditorUpdateSlices() {
 
         nslices.push({
             type: 'content',
-            content: lyric.slice(oset).trim(),
+            content: slyric.spacelessSlice(oset).toString(),
             width: ((duration - pt) / duration) * focusWidth
         })
 
@@ -120,6 +122,8 @@ function SliceComponent({ idx, slice }: { idx: number; slice: StateEditorSlice[0
 function EditorMoveTimeDividers() {
     const dispatch = useAppDispatch()
     const {
+        session,
+        activeLine,
         editor: {
             rootDiv,
             widthState: { width }
@@ -164,6 +168,11 @@ function EditorMoveTimeDividers() {
             document.body.style.removeProperty('cursor')
             setTarget(null)
             setTargetAction(null)
+
+            if (session == null || activeLine == null) return
+            const timedlyrics = session.timedlyrics
+            timedlyrics.lines[activeLine] = line
+            timedlyrics.update()
         }
 
         document.addEventListener('mousemove', mousemoveHandler)
@@ -195,7 +204,8 @@ function EditorUpdateWidth() {
     useEffect(() => {
         if (!rootDiv.current) return
         const w = rootDiv.current.getBoundingClientRect().width
-        setWidth(w)
+        if (width == 0) setWidth(w)
+
         const durationScaled = duration - (duration % detailTime) // properly scaled duration
         const details = extradetails * Math.floor(durationScaled / detailTime) + 1
 
@@ -225,7 +235,7 @@ function EditorSlices() {
     )
 }
 
-class SpacelessString {
+export class SpacelessString {
     constructor(
         public offsetSpaceMap: Array<number>, // spacemap that fits spaceless text
         public spaceMap: Array<number>, // spacemap that fits original text
@@ -274,6 +284,11 @@ class SpacelessString {
         return index - spaces.length
     }
 
+    public antiremapIndex(index: number): number {
+        const spaces = this.spaceMap.filter((item) => index >= item)
+        return index + spaces.length
+    }
+
     public chars() {
         return this.toString()
     }
@@ -281,56 +296,113 @@ class SpacelessString {
     public slice(start: number, end?: number) {
         return SpacelessString.from(this.toString().slice(start, end))
     }
+
+    public spacelessSlice(start: number, end?: number) {
+        let scontent = this.content.slice(start, end)
+        let offsetspacemap = this.offsetSpaceMap.filter((item) => item >= start)
+        if (end !== undefined) offsetspacemap = offsetspacemap.filter((item) => item <= end)
+        let content = ''
+
+        offsetspacemap = offsetspacemap.map((item) => item - start)
+
+        let v = 0
+        for (let i = 0; i < offsetspacemap.length; i++) {
+            let h = offsetspacemap[i]
+            content += scontent.slice(v, h) + ' '
+            v = h
+        }
+
+        content += scontent.slice(v)
+
+        return SpacelessString.from(content)
+    }
 }
 
 function EditorAddDividers() {
+    const dispatch = useAppDispatch()
     const {
+        session,
         activeLine,
         activeLyrics,
         lineStates: {
-            lineState: { line }
+            lineState: { line, setLine },
+            durationState: { duration }
         }
     } = useLocalState()
 
     const lyric = activeLyrics.find((item) => item[0] == activeLine)?.[1]!
 
     const slyric = SpacelessString.from(lyric)
-    const oline = line.map((item) => {
-        return {
-            ...item,
-            offset: slyric.remapIndex(item.offset)
-        }
-    })
 
     const hasLine = (idx: number) => {
-        return oline.findIndex((item) => item.offset == idx) !== -1
-    }
-    const typeLine = (idx: number) => {
-        return oline.find((item) => item.offset == idx)?.type
+        return line.findIndex((item) => item.offset == idx) !== -1
     }
 
-    useEffect(() => {
-        const of = line.map((item) => slyric.remapIndex(item.offset))
-        console.log(of)
-    }, [lyric, line, slyric])
+    const toggleDividerLine = (idx: number) => {
+        let lg = [...line]
+
+        const offset = idx
+        const lf = lg.find((item) => item.offset == offset)
+
+        if (lf === undefined) {
+            const min =
+                lg
+                    .filter((item) => offset > item.offset)
+                    .sort((a, b) => a.offset - b.offset)
+                    .pop()?.time ?? 0
+
+            const max =
+                lg
+                    .filter((item) => offset < item.offset)
+                    .sort((a, b) => b.offset - a.offset)
+                    .pop()?.time ?? duration
+
+            const item: TimedLyricLineItemData = {
+                offset: offset,
+                type: 'nospace',
+                time: min + (max - min) / 2
+            }
+
+            lg.push(item)
+
+            dispatch(
+                TimedLyricsAction.add({
+                    content: item
+                })
+            )
+            dispatch(TimedLyricsAction.sort())
+        } else {
+            const indx = lg.findIndex((item) => item.offset === offset)
+            lg = lg.filter((item) => item.offset !== offset)
+
+            if (indx !== -1) {
+                dispatch(
+                    TimedLyricsAction.remove({
+                        index: indx
+                    })
+                )
+
+                dispatch(TimedLyricsAction.sort())
+            }
+        }
+
+        lg.sort((a, b) => a.offset - b.offset)
+        setLine(lg)
+        if (session && activeLine !== null) {
+            const timedlyrics = session.timedlyrics
+            timedlyrics.lines[activeLine] = lg
+            timedlyrics.update()
+        }
+    }
 
     return (
         <div className="h-full w-full flex items-center justify-center">
             {slyric.content.split('').map((char, idx) => (
                 <Fragment key={idx}>
-                    <span
-                        style={
-                            {
-                                // display: item.type == 'content' ? 'flex' : 'none'
-                            }
-                        }
-                        className="text-text-200 text-xl select-none"
-                    >
-                        {char}
-                    </span>
+                    <span className="text-text-200 text-xl select-none">{char}</span>
                     <div
+                        onClick={() => toggleDividerLine(idx + 1)}
                         style={{
-                            // display: item.type !== 'content' ? 'flex' : 'none',
                             minWidth: new Set(slyric.offsetSpaceMap).has(idx + 1)
                                 ? '1.75rem'
                                 : '0.50rem'
@@ -371,7 +443,10 @@ export default function TimedLyricEditor() {
         <div
             ref={rootDiv}
             className="flex flex-col text-lg h-32 overflow-x-auto overflow-y-hidden w-full bg-background-800 bg-gradient-to-t from-background-900  to-95% to-background-950"
-            style={{ minWidth: width == 0 ? '' : width + 'px' }}
+            style={{
+                minWidth: width == 0 ? '' : width + 'px',
+                maxWidth: width == 0 ? '' : width + 'px'
+            }}
         >
             <EditorUpdateSlices />
             <EditorMoveTimeDividers />
