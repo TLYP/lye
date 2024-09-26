@@ -1,6 +1,5 @@
 'use client'
 import { useAppSelector } from '@/lib/hooks'
-import PlayIcon from '@/app/components/icons/play'
 
 export default function Component({
     linenumber,

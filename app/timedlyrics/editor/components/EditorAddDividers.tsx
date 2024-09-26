@@ -18,6 +18,7 @@ export default function Component() {
         }
     } = useLocalState()
 
+    // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
     const lyric = activeLyrics.find((item) => item[0] == activeLine)?.[1]!
 
     const slyric = SpacelessString.from(lyric)

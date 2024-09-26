@@ -49,7 +49,6 @@ function LyricsView({ activeLyric }: { activeLyric: Array<[number, string]> }) {
         )
 
         session.timedlines.update()
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [timedlines])
 
     useEffect(() => {
@@ -173,10 +172,12 @@ export default function Page() {
         if (!lyric) return
 
         let data = lyric.lines.map((i) => i['content'])
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         data = data.map((item, i) => [i + 1, item]) as any
         data = data.filter((item) => !item[1].startsWith('['))
         data = data.filter((item) => !(item[1].trim() === ''))
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         setActiveLyric(data as any)
         ;(async () => {
             if (activeSession === null) return

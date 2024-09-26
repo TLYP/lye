@@ -115,7 +115,7 @@ export const getAll = async (db: IDBDatabase): Promise<Array<TimedLyricData>> =>
         const request = objectStore.getAll()
 
         request.onerror = (error) => rej(error)
-        request.onsuccess = (event) => {
+        request.onsuccess = () => {
             if (request.result.length == 0) rej(new Error())
             else res(request.result)
         }
@@ -130,7 +130,7 @@ export const get = async (uuid: string, db: IDBDatabase): Promise<TimedLyricData
         const request = objectStore.get(uuid)
 
         request.onerror = (error) => rej(error)
-        request.onsuccess = (event) => {
+        request.onsuccess = () => {
             if (request.result.length == 0) rej(new Error())
             else res(request.result)
         }

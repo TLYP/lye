@@ -1,5 +1,4 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
-import { LyricData } from '@/app/cachedb/lyrics'
 
 export type DragToTimelineState = {
     active?: {

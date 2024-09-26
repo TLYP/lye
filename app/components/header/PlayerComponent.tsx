@@ -107,6 +107,7 @@ export default function Component() {
 
     if (session == null) return <></>
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const changecurrenttime = (event: any) => {
         const element = document.getElementById('player-onclick-element')
         if (!audio || !element) return

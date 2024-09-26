@@ -164,15 +164,6 @@ export default function Component({
         timedlines.primary.findIndex((item) => item.uhash == uhash) !== -1 ||
         timedlines.secondary.findIndex((item) => item.uhash == uhash) !== -1
 
-    const lineInTimelineTarget = (uhash: number) => {
-        const pm = timedlines.primary.findIndex((item) => item.uhash == uhash) !== -1
-        const sc = timedlines.secondary.findIndex((item) => item.uhash == uhash) !== -1
-
-        if (pm) return 'primary'
-        else if (sc) return 'secondary'
-        return undefined
-    }
-
     const moveElementToMouse = (e: MouseEvent) => {
         if (draggablyElementRef.current == null) return
 

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 
 export type AudioPlayerState = {

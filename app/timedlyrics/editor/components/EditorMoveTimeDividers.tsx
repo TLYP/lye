@@ -49,7 +49,7 @@ export default function Component() {
             handleMove(ox)
         }
 
-        const mouseupHandler = (e: MouseEvent) => {
+        const mouseupHandler = () => {
             document.body.style.removeProperty('cursor')
             setTarget(null)
             setTargetAction(null)

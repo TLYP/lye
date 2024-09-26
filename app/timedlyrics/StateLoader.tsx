@@ -34,14 +34,14 @@ export function LoadRelevantState() {
     const everyLyrics = useAppSelector((state) => state.lyrics.lyrics)
 
     useEffect(() => {
-        if (everyLyrics == null) return
-        const lyric = everyLyrics.find((i) => i.uuid == activeSession?.lyricRef)
-        if (!lyric) return
-
-        let data = lyric.lines.map((i) => i['content'])
-        data = data.map((item, i) => [i + 1, item]) as any
-        data = data.filter((item) => !item[1].startsWith('['))
-        data = data.filter((item) => !(item[1].trim() === ''))
+        // if (everyLyrics == null) return
+        // const lyric = everyLyrics.find((i) => i.uuid == activeSession?.lyricRef)
+        // if (!lyric)
+        //     return
+        // let data = lyric.lines.map((i) => i['content'])
+        // data = data.map((item, i) => [i + 1, item]) as any
+        // data = data.filter((item) => !item[1].startsWith('['))
+        // data = data.filter((item) => !(item[1].trim() === ''))
         ;(async () => {
             if (activeSession === null) return
 

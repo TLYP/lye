@@ -21,7 +21,8 @@ export default function EditorUpdateSlices() {
         if (focusWidth == 0) return
         let oset = 0
         let pt = 0
-        const nslices = []
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const nslices: any = []
 
         const lyric = activeLyrics.find((item) => item[0] == activeLine)?.[1]
         if (!lyric) return
@@ -47,6 +48,7 @@ export default function EditorUpdateSlices() {
         })
 
         setSlices(() => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             return [...nslices] as any
         })
     }, [duration, focusWidth, line])

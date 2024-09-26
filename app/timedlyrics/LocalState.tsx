@@ -77,6 +77,7 @@ export type State = {
     }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const Context = createContext<State>({} as any)
 
 export function LocalStateProvider({ children }: { children: React.ReactNode }) {

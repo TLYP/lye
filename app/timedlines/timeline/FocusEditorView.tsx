@@ -73,8 +73,8 @@ export default function FocusEditorView({
     const activeSession = useAppSelector((state) => state.sessions.activeSession)
     const [session, setSession] = useState<null | SessionReference>(null)
     const dispatch = useAppDispatch()
-    const state = useRef<HTMLDivElement>()
-    const rootDiv = useRef<HTMLDivElement>()
+    const state = useRef<HTMLDivElement>(null)
+    const rootDiv = useRef<HTMLDivElement>(null)
     const duration = useAppSelector((state) =>
         Math.floor((state.audioPlayer.audio?.duration ?? 0) * 1000)
     )
@@ -390,7 +390,7 @@ export default function FocusEditorView({
 
     return (
         <div
-            ref={rootDiv as any}
+            ref={rootDiv}
             className="flex z-10 overflow-y-hidden overflow-x-hidden flex-col grow bg-background-800 bg-gradient-to-b from-background-950 to-45% to-background-900"
         >
             <div className="flex flex-col grow relative" style={{ width: width + 'px' }}>
@@ -398,7 +398,7 @@ export default function FocusEditorView({
                     style={{ left: Math.floor((currentTime / duration) * width) + 'px' }}
                     className="top-0 min-w-1 h-full bg-text-800 opacity-85 absolute z-50"
                 ></div>
-                <div className="flex justify-between h-4 w-full" ref={state as any}>
+                <div className="flex justify-between h-4 w-full" ref={state}>
                     <FocusEditorViewTimelineDetails
                         detailTime={detailTime}
                         duration={duration}
@@ -430,7 +430,7 @@ export default function FocusEditorView({
                                             ? 'w-resize'
                                             : ''
                                 }}
-                                onMouseDown={(e) => {
+                                onMouseDown={() => {
                                     setActivityTarget(item.uhash)
                                     setMouseActivity('resizeleft')
                                 }}
@@ -461,7 +461,7 @@ export default function FocusEditorView({
                                             ? 'e-resize'
                                             : ''
                                 }}
-                                onMouseDown={(e) => {
+                                onMouseDown={() => {
                                     setActivityTarget(item.uhash)
                                     setMouseActivity('resizeright')
                                 }}
@@ -494,7 +494,7 @@ export default function FocusEditorView({
                                             ? 'w-resize'
                                             : ''
                                 }}
-                                onMouseDown={(e) => {
+                                onMouseDown={() => {
                                     setActivityTarget(item.uhash)
                                     setMouseActivity('resizeleft')
                                 }}
@@ -525,7 +525,7 @@ export default function FocusEditorView({
                                             ? 'e-resize'
                                             : ''
                                 }}
-                                onMouseDown={(e) => {
+                                onMouseDown={() => {
                                     setActivityTarget(item.uhash)
                                     setMouseActivity('resizeright')
                                 }}

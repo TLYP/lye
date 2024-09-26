@@ -7,7 +7,9 @@ export default function Component({ idx, slice }: { idx: number; slice: StateEdi
             className="flex justify-center overflow-hidden rounded-sm"
             id={'slice-content-item'}
             style={{
+                // eslint-disable-next-line no-constant-binary-expression
                 maxWidth: (slice.width ?? 0) - (idx / 2) * 1 ?? 'px',
+                // eslint-disable-next-line no-constant-binary-expression
                 minWidth: (slice.width ?? 0) - (idx / 2) * 1 ?? 'px'
             }}
         >

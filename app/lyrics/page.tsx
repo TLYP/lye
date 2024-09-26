@@ -19,7 +19,7 @@ export default function Page() {
     const [activeLyric, setActiveLyric] = useState<string>('')
     const [mapped, setMapped] = useState(['', ''])
     const [value, setValue] = useState<null | string>(null)
-    const textarea = useRef<HTMLTextAreaElement>()
+    const textarea = useRef<HTMLTextAreaElement>(null)
 
     useEffect(() => {
         if (activeSession == null) return
@@ -68,6 +68,7 @@ export default function Page() {
         let linenum = 1
         let lineoffset = 0
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const updates: any[] = []
 
         for (let i = 0; i < diffs.length; i++) {
@@ -167,7 +168,6 @@ export default function Page() {
         )
 
         session.timedlines.update()
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [timedlines])
 
     return (
@@ -216,7 +216,7 @@ export default function Page() {
                         </div>
                         <textarea
                             className={'text-text-300 text-lg'}
-                            ref={textarea as any}
+                            ref={textarea}
                             onChange={onchange}
                             value={value}
                             style={{
