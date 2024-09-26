@@ -1,10 +1,9 @@
 'use client'
-import { useAppDispatch, useAppSelector } from '@/lib/hooks'
-import { useEffect } from 'react'
 import * as TimedLyricsAction from '@/lib/timedlyrics'
 import * as TimedlinesActions from '@/lib/timedlines'
 import * as LyricsActions from '@/lib/lyrics'
-import { TimedLyricLineData, TimedLyric } from '../cachedb/timedlyrics'
+import { useAppDispatch, useAppSelector } from '@/lib/hooks'
+import { useEffect } from 'react'
 import { Session } from '../cachedb/sessions'
 
 function LoadActiveLyric() {

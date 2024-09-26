@@ -1,8 +1,8 @@
 'use client'
-import { useAppSelector } from '@/lib/hooks'
-import { LoadRelevantState } from './StateLoader'
 import LinenumberColumnComponent from './components/LinenumberColumnComponent'
 import LyricColumnComponent from './components/LyricColumnComponent'
+import { useAppSelector } from '@/lib/hooks'
+import { LoadRelevantState } from './StateLoader'
 import { LocalStateProvider } from './LocalState'
 
 function LyricsView() {

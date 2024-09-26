@@ -1,3 +1,4 @@
+'use client'
 import { useAppSelector } from '@/lib/hooks'
 import { TimedLinesState } from '@/lib/timedlines'
 import {
