@@ -94,8 +94,8 @@ export function LocalStateProvider({ children }: { children: React.ReactNode }) 
     const [slices, setSlices] = useState<StateEditorSlice>([])
     const [width, setWidth] = useState(0)
     const [focusWidth, setFocusWidth] = useState(0)
-    const [detailTime, setDetailTime] = useState(1000) //tiempo
-    const [extradetails, setExtradetails] = useState(16) // barritas
+    const [detailTime, setDetailTime] = useState(1000) //time
+    const [extradetails, setExtradetails] = useState(16) // time details
     const rootDiv = useRef<HTMLDivElement>(null)
     const [gapsize, setGapsize] = useState(5)
 
