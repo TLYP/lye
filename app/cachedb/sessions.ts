@@ -3,6 +3,7 @@ import { File, FileReference } from './file'
 import { Lyric, LyricReference } from './lyrics'
 import { TimedLines, TimedLinesReference } from './timedlines'
 import { TimedLyric, TimedLyricReference } from './timedlyrics'
+import { add, get, getAll } from './utils'
 
 const TABLE_NAME = 'sessions'
 
@@ -27,7 +28,7 @@ export class Session {
 
     public async save(db?: IDBDatabase) {
         if (!db) db = await getDatabase()
-        await add(this.data, db)
+        await add(this.data, db, TABLE_NAME)
 
         const file = await File.get(this.data.fileRef)
         const lyric = await Lyric.get(this.data.lyricRef)
@@ -42,7 +43,7 @@ export class Session {
     public static async get(uuid: string, db?: IDBDatabase) {
         if (!db) db = await getDatabase()
 
-        const data = await get(uuid, db)
+        const data = (await get(uuid, db, TABLE_NAME)) as SessionData
         return new SessionReference(
             data,
             {
@@ -60,7 +61,7 @@ export class Session {
 
         const sessions = []
 
-        for (const sessionItem of await getAll(db)) {
+        for (const sessionItem of await getAll(db, TABLE_NAME)) {
             sessions.push(await Session.get(sessionItem.uuid))
         }
 
@@ -119,47 +120,6 @@ export class SessionReference {
     public get name() {
         return this.data['name']
     }
-}
-
-export const add = async (data: SessionData, db: IDBDatabase) => {
-    return new Promise((res, rej) => {
-        const transaction = db.transaction([TABLE_NAME], 'readwrite')
-        const objectStore = transaction.objectStore(TABLE_NAME)
-
-        const request: IDBRequest<IDBValidKey> = objectStore.add(data)
-
-        request.onerror = (error) => rej(error)
-        request.onsuccess = (event) => res(event)
-    })
-}
-
-export const getAll = async (db: IDBDatabase): Promise<Array<SessionData>> => {
-    return new Promise((res, rej) => {
-        const transaction = db.transaction([TABLE_NAME], 'readonly')
-        const objectStore = transaction.objectStore(TABLE_NAME)
-
-        const request = objectStore.getAll()
-
-        request.onerror = (error) => rej(error)
-        request.onsuccess = () => {
-            if (request.result.length == 0) rej(new Error())
-            else res(request.result)
-        }
-    })
-}
-
-export const get = async (uuid: string, db: IDBDatabase): Promise<SessionData> => {
-    return new Promise((res, rej) => {
-        const transaction = db.transaction([TABLE_NAME], 'readonly')
-        const objectStore = transaction.objectStore(TABLE_NAME)
-
-        const request = objectStore.get(uuid)
-
-        request.onerror = (error) => rej(error)
-        request.onsuccess = () => {
-            res(request.result)
-        }
-    })
 }
 
 const defs = { TABLE_NAME }

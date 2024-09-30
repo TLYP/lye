@@ -1,5 +1,5 @@
 import { getDatabase } from './index'
-
+import { add, get } from './utils'
 export const TABLE_NAME = 'files'
 
 function base64toBlob(base64Data: string, contentType: string) {
@@ -36,7 +36,7 @@ export class File {
 
     public async save(db?: IDBDatabase) {
         if (!db) db = await getDatabase()
-        await add(this.data, db)
+        await add(this.data, db, TABLE_NAME)
 
         return new FileReference(this.data, db)
     }
@@ -45,7 +45,7 @@ export class File {
     public static async get(uuid: string, db?: IDBDatabase) {
         if (!db) db = await getDatabase()
 
-        const data = await get(uuid, db)
+        const data = (await get(uuid, db, TABLE_NAME)) as FileCache
         return new FileReference(data, db)
     }
 
@@ -82,48 +82,6 @@ export class FileReference {
     public get fileSize() {
         return this.data['filesize']
     }
-}
-
-export const add = async (data: FileCache, db: IDBDatabase) => {
-    return new Promise((res, rej) => {
-        const transaction = db.transaction([TABLE_NAME], 'readwrite')
-        const objectStore = transaction.objectStore(TABLE_NAME)
-
-        const request: IDBRequest<IDBValidKey> = objectStore.add(data)
-
-        request.onerror = (error) => rej(error)
-        request.onsuccess = (event) => res(event)
-    })
-}
-
-export const getAll = async (db: IDBDatabase): Promise<Array<FileCache>> => {
-    return new Promise((res, rej) => {
-        const transaction = db.transaction([TABLE_NAME], 'readonly')
-        const objectStore = transaction.objectStore(TABLE_NAME)
-
-        const request = objectStore.getAll()
-
-        request.onerror = (error) => rej(error)
-        request.onsuccess = () => {
-            if (request.result.length == 0) rej(new Error())
-            else res(request.result)
-        }
-    })
-}
-
-export const get = async (uuid: string, db: IDBDatabase): Promise<FileCache> => {
-    return new Promise((res, rej) => {
-        const transaction = db.transaction([TABLE_NAME], 'readonly')
-        const objectStore = transaction.objectStore(TABLE_NAME)
-
-        const request = objectStore.get(uuid)
-
-        request.onerror = (error) => rej(error)
-        request.onsuccess = () => {
-            if (request.result.length == 0) rej(new Error())
-            else res(request.result)
-        }
-    })
 }
 
 const defs = { TABLE_NAME }
