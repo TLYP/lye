@@ -1,4 +1,5 @@
 import { getDatabase } from '.'
+import { add, get, getAll, put } from './utils'
 
 export const TABLE_NAME = 'timedlines'
 
@@ -29,7 +30,7 @@ export class TimedLines {
 
     public async save(db?: IDBDatabase) {
         if (!db) db = await getDatabase()
-        await add(this.data, db)
+        await add(this.data, db, TABLE_NAME)
 
         return new TimedLinesReference(this.data, db)
     }
@@ -39,7 +40,7 @@ export class TimedLines {
     public static async get(uuid: string, db?: IDBDatabase) {
         if (!db) db = await getDatabase()
 
-        const data = await get(uuid, db)
+        const data = (await get(uuid, db, TABLE_NAME)) as TimedLineData
         return new TimedLinesReference(data, db)
     }
 
@@ -48,7 +49,7 @@ export class TimedLines {
 
         const lyrics = []
 
-        for (const lyricItem of await getAll(db)) {
+        for (const lyricItem of await getAll(db, TABLE_NAME)) {
             lyrics.push(await TimedLines.get(lyricItem.uuid))
         }
 
@@ -85,7 +86,7 @@ export class TimedLinesReference {
     }
 
     public async update() {
-        await put(this.data, this.db)
+        await put(this.data, this.db, TABLE_NAME)
     }
 }
 
@@ -149,63 +150,6 @@ export class TimedLinesReferenceLine {
     public set uhash(value: number) {
         this.data['uhash'] = value
     }
-}
-
-export const add = async (data: TimedLineData, db: IDBDatabase) => {
-    return new Promise((res, rej) => {
-        const transaction = db.transaction([TABLE_NAME], 'readwrite')
-        const objectStore = transaction.objectStore(TABLE_NAME)
-
-        const request: IDBRequest<IDBValidKey> = objectStore.add(data)
-
-        request.onerror = (error) => rej(error)
-        request.onsuccess = (event) => res(event)
-    })
-}
-
-// updates or adds
-export const put = async (data: TimedLineData, db: IDBDatabase) => {
-    return new Promise((res, rej) => {
-        const transaction = db.transaction([TABLE_NAME], 'readwrite')
-        const objectStore = transaction.objectStore(TABLE_NAME)
-
-        const request = objectStore.put(data)
-
-        request.onerror = (error) => rej(error)
-        request.onsuccess = (event) => {
-            res(event)
-        }
-    })
-}
-
-export const getAll = async (db: IDBDatabase): Promise<Array<TimedLineData>> => {
-    return new Promise((res, rej) => {
-        const transaction = db.transaction([TABLE_NAME], 'readonly')
-        const objectStore = transaction.objectStore(TABLE_NAME)
-
-        const request = objectStore.getAll()
-
-        request.onerror = (error) => rej(error)
-        request.onsuccess = () => {
-            if (request.result.length == 0) rej(new Error())
-            else res(request.result)
-        }
-    })
-}
-
-export const get = async (uuid: string, db: IDBDatabase): Promise<TimedLineData> => {
-    return new Promise((res, rej) => {
-        const transaction = db.transaction([TABLE_NAME], 'readonly')
-        const objectStore = transaction.objectStore(TABLE_NAME)
-
-        const request = objectStore.get(uuid)
-
-        request.onerror = (error) => rej(error)
-        request.onsuccess = () => {
-            if (request.result.length == 0) rej(new Error())
-            else res(request.result)
-        }
-    })
 }
 
 const defs = { TABLE_NAME }
