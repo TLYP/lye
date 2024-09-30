@@ -7,9 +7,7 @@ export default function Component() {
         editor: {
             rootDiv,
             widthState: { width, setWidth },
-            focusWidthState: { setFocusWidth },
-            detailTimeState: { detailTime },
-            extradetailsState: { extradetails }
+            focusWidthState: { setFocusWidth }
         },
         lineStates: {
             durationState: { duration }
@@ -21,12 +19,7 @@ export default function Component() {
         const w = rootDiv.current.getBoundingClientRect().width
         if (width == 0) setWidth(w)
 
-        const durationScaled = duration - (duration % detailTime) // properly scaled duration
-        const details = extradetails * Math.floor(durationScaled / detailTime) + 1
-
-        const gapsize = 5
-
-        setFocusWidth(w < gapsize * details ? gapsize * details : w)
+        setFocusWidth(w)
     }, [rootDiv, width, duration])
 
     return <></>
