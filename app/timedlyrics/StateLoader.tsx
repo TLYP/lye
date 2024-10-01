@@ -1,10 +1,9 @@
 'use client'
-import { useAppDispatch, useAppSelector } from '@/lib/hooks'
-import { useEffect } from 'react'
 import * as TimedLyricsAction from '@/lib/timedlyrics'
 import * as TimedlinesActions from '@/lib/timedlines'
 import * as LyricsActions from '@/lib/lyrics'
-import { TimedLyricLineData, TimedLyric } from '../cachedb/timedlyrics'
+import { useAppDispatch, useAppSelector } from '@/lib/hooks'
+import { useEffect } from 'react'
 import { Session } from '../cachedb/sessions'
 
 function LoadActiveLyric() {
@@ -17,7 +16,7 @@ function LoadActiveLyric() {
         const lyric = everyLyrics.find((i) => i.uuid == activeSession?.lyricRef)
         if (!lyric) return
 
-        let data = lyric.lines.map((i) => i['content'])
+        const data = lyric.lines.map((i) => i['content'])
         let ndata = data.map((item, i) => [i + 1, item]) as Array<[number, string]>
         ndata = ndata.filter((item) => !item[1].startsWith('['))
         ndata = ndata.filter((item) => !(item[1].trim() === ''))
@@ -35,14 +34,14 @@ export function LoadRelevantState() {
     const everyLyrics = useAppSelector((state) => state.lyrics.lyrics)
 
     useEffect(() => {
-        if (everyLyrics == null) return
-        const lyric = everyLyrics.find((i) => i.uuid == activeSession?.lyricRef)
-        if (!lyric) return
-
-        let data = lyric.lines.map((i) => i['content'])
-        data = data.map((item, i) => [i + 1, item]) as any
-        data = data.filter((item) => !item[1].startsWith('['))
-        data = data.filter((item) => !(item[1].trim() === ''))
+        // if (everyLyrics == null) return
+        // const lyric = everyLyrics.find((i) => i.uuid == activeSession?.lyricRef)
+        // if (!lyric)
+        //     return
+        // let data = lyric.lines.map((i) => i['content'])
+        // data = data.map((item, i) => [i + 1, item]) as any
+        // data = data.filter((item) => !item[1].startsWith('['))
+        // data = data.filter((item) => !(item[1].trim() === ''))
         ;(async () => {
             if (activeSession === null) return
 

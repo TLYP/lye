@@ -19,7 +19,7 @@ import {
 } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import { IconFile } from '@tabler/icons-react'
-import { SetStateAction, Dispatch, useState, useRef, useEffect } from 'react'
+import { SetStateAction, Dispatch, useState, useEffect } from 'react'
 import axios from 'axios'
 import { Song } from '@/app/api/identify/route'
 import PlayIcon from '@/app/components/icons/play'
@@ -29,7 +29,6 @@ import { Session } from '@/app/cachedb/sessions'
 import { TimedLines as CacheTimedLines } from '@/app/cachedb/timedlines'
 import * as Sessions from '@/lib/sessions'
 import * as Lyrics from '@/lib/lyrics'
-import * as TimedLines from '@/lib/timedlines'
 import { useAppDispatch } from '@/lib/hooks'
 import { Lyric } from '@/app/cachedb/lyrics'
 import { TimedLyric } from '@/app/cachedb/timedlyrics'
@@ -110,6 +109,7 @@ function InputFile({
                 reader.readAsDataURL(file)
 
                 reader.onload = async (e) => {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     setData(e.target?.result as any)
 
                     const controller = new AbortController()
@@ -172,7 +172,7 @@ function IdentifyMusic({
                 setTracks(data.tracks)
             })
 
-            .catch((err) => {})
+            .catch(() => {})
     }
 
     return (
@@ -238,7 +238,7 @@ export function ReviewMusic({ song }: { song: Song }) {
     useEffect(() => {
         if (song.preview_url == undefined) return
 
-        let audio = new Audio()
+        const audio = new Audio()
         audio.src = song.preview_url
 
         setAudio(audio)
@@ -318,8 +318,11 @@ export default function Component({ close, opened }: { opened: boolean; close: (
         // Session.from()
         const cacheFile = await CacheFile.from({
             data: data!,
+            // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
             filename: file?.name!,
+            // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
             filetype: file?.type!,
+            // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
             filesize: file?.size!
         }).save()
 
@@ -343,6 +346,7 @@ export default function Component({ close, opened }: { opened: boolean; close: (
             lyricRef: lyric.uuid,
             timedlinesRef: timedlines.uuid,
             timedlyricsRef: timedlyrics.uuid,
+            // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
             name: selectedTrack?.name!
         }).save()
 

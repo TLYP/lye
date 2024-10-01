@@ -45,7 +45,7 @@ export const TimedLyricsSlice = createSlice({
         },
         sort(state) {
             if (!state.activeLine) return
-            let line = state.lines[state.activeLine]
+            const line = state.lines[state.activeLine]
             if (!line) return
 
             state.lines[state.activeLine] = line.sort((a, b) => a.offset - b.offset)

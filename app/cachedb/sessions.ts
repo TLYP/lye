@@ -60,7 +60,7 @@ export class Session {
 
         const sessions = []
 
-        for (let sessionItem of await getAll(db)) {
+        for (const sessionItem of await getAll(db)) {
             sessions.push(await Session.get(sessionItem.uuid))
         }
 
@@ -141,7 +141,7 @@ export const getAll = async (db: IDBDatabase): Promise<Array<SessionData>> => {
         const request = objectStore.getAll()
 
         request.onerror = (error) => rej(error)
-        request.onsuccess = (event) => {
+        request.onsuccess = () => {
             if (request.result.length == 0) rej(new Error())
             else res(request.result)
         }
@@ -156,7 +156,7 @@ export const get = async (uuid: string, db: IDBDatabase): Promise<SessionData> =
         const request = objectStore.get(uuid)
 
         request.onerror = (error) => rej(error)
-        request.onsuccess = (event) => {
+        request.onsuccess = () => {
             res(request.result)
         }
     })

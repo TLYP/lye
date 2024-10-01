@@ -1,3 +1,4 @@
+'use client'
 import { useAppSelector } from '@/lib/hooks'
 import { TimedLinesState } from '@/lib/timedlines'
 import {
@@ -31,6 +32,10 @@ export type State = {
         slicesState: {
             slices: StateEditorSlice
             setSlices: Dispatch<SetStateAction<StateEditorSlice>>
+        }
+        gapsizeState: {
+            gapsize: number
+            setGapsize: Dispatch<SetStateAction<number>>
         }
         widthState: {
             width: number
@@ -76,6 +81,7 @@ export type State = {
     }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const Context = createContext<State>({} as any)
 
 export function LocalStateProvider({ children }: { children: React.ReactNode }) {
@@ -88,9 +94,10 @@ export function LocalStateProvider({ children }: { children: React.ReactNode }) 
     const [slices, setSlices] = useState<StateEditorSlice>([])
     const [width, setWidth] = useState(0)
     const [focusWidth, setFocusWidth] = useState(0)
-    const [detailTime, setDetailTime] = useState(1000)
-    const [extradetails, setExtradetails] = useState(16)
+    const [detailTime, setDetailTime] = useState(1000) //time
+    const [extradetails, setExtradetails] = useState(16) // time details
     const rootDiv = useRef<HTMLDivElement>(null)
+    const [gapsize, setGapsize] = useState(5)
 
     const [line, setLine] = useState<TimedLyricLineData>([])
     const [start, setStart] = useState(24 * 1000)
@@ -128,6 +135,12 @@ export function LocalStateProvider({ children }: { children: React.ReactNode }) 
         setLine(lineitem ?? [])
     }, [lines, activeLine])
 
+    useEffect(() => {
+        setDetailTime(1000)
+        const multiplier = Math.floor(duration / 1000 / 5)
+        if (multiplier > 0) setDetailTime(1000 * multiplier)
+    }, [duration, setDetailTime])
+
     return (
         <Context.Provider
             value={{
@@ -141,6 +154,7 @@ export function LocalStateProvider({ children }: { children: React.ReactNode }) 
                     slicesState: { slices, setSlices },
                     widthState: { width, setWidth },
                     focusWidthState: { focusWidth, setFocusWidth },
+                    gapsizeState: { gapsize, setGapsize },
                     detailTimeState: {
                         detailTime,
                         setDetailTime

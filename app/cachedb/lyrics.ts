@@ -36,7 +36,7 @@ export class Lyric {
 
         const lyrics = []
 
-        for (let lyricItem of await getAll(db)) {
+        for (const lyricItem of await getAll(db)) {
             lyrics.push(await Lyric.get(lyricItem.uuid))
         }
 
@@ -51,7 +51,10 @@ export class Lyric {
 }
 
 export class LyricReference {
-    constructor(private data: LyricData, private db: IDBDatabase) {}
+    constructor(
+        private data: LyricData,
+        private db: IDBDatabase
+    ) {}
 
     public serialize() {
         return this.data
@@ -109,7 +112,7 @@ export const getAll = async (db: IDBDatabase): Promise<Array<LyricData>> => {
         const request = objectStore.getAll()
 
         request.onerror = (error) => rej(error)
-        request.onsuccess = (event) => {
+        request.onsuccess = () => {
             if (request.result.length == 0) rej(new Error())
             else res(request.result)
         }
@@ -124,7 +127,7 @@ export const get = async (uuid: string, db: IDBDatabase): Promise<LyricData> => 
         const request = objectStore.get(uuid)
 
         request.onerror = (error) => rej(error)
-        request.onsuccess = (event) => {
+        request.onsuccess = () => {
             if (request.result.length == 0) rej(new Error())
             else res(request.result)
         }

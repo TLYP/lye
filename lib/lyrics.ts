@@ -1,6 +1,5 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 import { LyricData } from '@/app/cachedb/lyrics'
-import { useAppDispatch, useAppSelector } from './hooks'
 
 export type LyricsState = {
     active: [number, string][]

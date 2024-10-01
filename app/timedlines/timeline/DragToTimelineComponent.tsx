@@ -32,7 +32,7 @@ export function DragToTimelineDrophandleComponent({
     }, [active])
 
     useEffect(() => {
-        let offset = 64
+        const offset = 64
         let shadowItemReplacement: null | { start: number; end: number } = null
 
         const findNearestRight = (linenumber: number) =>
@@ -83,7 +83,7 @@ export function DragToTimelineDrophandleComponent({
 
             if (f(Math.floor(width)) < 1000) return (shadowItemReplacement = null)
 
-            let xoffset = offset + width / 2
+            const xoffset = offset + width / 2
             let x = e.clientX + scrollLeft - xoffset
             if (x <= 0) x = 0
 
@@ -164,15 +164,6 @@ export default function Component({
         timedlines.primary.findIndex((item) => item.uhash == uhash) !== -1 ||
         timedlines.secondary.findIndex((item) => item.uhash == uhash) !== -1
 
-    const lineInTimelineTarget = (uhash: number) => {
-        const pm = timedlines.primary.findIndex((item) => item.uhash == uhash) !== -1
-        const sc = timedlines.secondary.findIndex((item) => item.uhash == uhash) !== -1
-
-        if (pm) return 'primary'
-        else if (sc) return 'secondary'
-        return undefined
-    }
-
     const moveElementToMouse = (e: MouseEvent) => {
         if (draggablyElementRef.current == null) return
 
@@ -191,8 +182,8 @@ export default function Component({
         if (cy >= bodyBoundaryBox.height - elementHeight / 2)
             cy = bodyBoundaryBox.height - elementHeight / 2
 
-        let x = cx - elementWidth / 2
-        let y = cy - elementHeight / 2
+        const x = cx - elementWidth / 2
+        const y = cy - elementHeight / 2
 
         draggablyElementRef.current.style.left = x + 'px'
         draggablyElementRef.current.style.top = y + 'px'

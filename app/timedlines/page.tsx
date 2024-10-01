@@ -11,14 +11,14 @@ import { TimedLinesReferenceLine } from '../cachedb/timedlines'
 export function formattedMS(milliseconds?: number) {
     if (milliseconds == undefined) return '--:--.---'
 
-    let ms = Math.round(milliseconds) % 1000
-    let seconds = Math.floor((milliseconds / 1000) % 60)
-    let minutes = Math.floor(milliseconds / 1000 / 60)
+    const ms = Math.round(milliseconds) % 1000
+    const seconds = Math.floor((milliseconds / 1000) % 60)
+    const minutes = Math.floor(milliseconds / 1000 / 60)
 
     // let fms = ms < 10 ? '.00' + ms : ms < 100 ? '.0' + ms : '.' + ms
     // if (ms == 0) fms = ''
 
-    let fms = ms < 10 ? '.00' + ms : ms < 100 ? '.0' + ms : '.' + ms
+    const fms = ms < 10 ? '.00' + ms : ms < 100 ? '.0' + ms : '.' + ms
 
     return `${minutes < 10 ? '0' + minutes : minutes}:${
         seconds < 10 ? '0' + seconds : seconds
@@ -49,7 +49,6 @@ function LyricsView({ activeLyric }: { activeLyric: Array<[number, string]> }) {
         )
 
         session.timedlines.update()
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [timedlines])
 
     useEffect(() => {
@@ -173,10 +172,12 @@ export default function Page() {
         if (!lyric) return
 
         let data = lyric.lines.map((i) => i['content'])
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         data = data.map((item, i) => [i + 1, item]) as any
         data = data.filter((item) => !item[1].startsWith('['))
         data = data.filter((item) => !(item[1].trim() === ''))
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         setActiveLyric(data as any)
         ;(async () => {
             if (activeSession === null) return

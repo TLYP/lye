@@ -21,9 +21,9 @@ export const cyrb53 = (str: string, seed = 0) => {
     return 4294967296 * (2097151 & h2) + (h1 >>> 0)
 }
 
-export const getDatabase = (name: string = 'database'): Promise<IDBDatabase> => {
-    return new Promise((res, rej) => {
-        const request: IDBOpenDBRequest = indexedDB.open('localdb', 1)
+export const getDatabase = (name: string = 'localdb'): Promise<IDBDatabase> => {
+    return new Promise((res) => {
+        const request: IDBOpenDBRequest = indexedDB.open(name, 1)
 
         request.onerror = (error) => console.error(error)
         request.onsuccess = (event) => res((event.target as IDBOpenDBRequest).result)
@@ -39,7 +39,7 @@ export const getDatabase = (name: string = 'database'): Promise<IDBDatabase> => 
     })
 }
 
-export const addData = async (data: any, db: IDBDatabase) => {
+export const addData = async (data: unknown, db: IDBDatabase) => {
     return new Promise((res, rej) => {
         const transaction = db.transaction(['audio'], 'readwrite')
         const objectStore = transaction.objectStore('audio')
@@ -51,7 +51,7 @@ export const addData = async (data: any, db: IDBDatabase) => {
     })
 }
 
-export const getData = async (db: IDBDatabase): Promise<any> => {
+export const getData = async (db: IDBDatabase): Promise<unknown> => {
     return new Promise((res, rej) => {
         const transaction = db.transaction(['audio'], 'readonly')
         const objectStore = transaction.objectStore('audio')
@@ -59,7 +59,7 @@ export const getData = async (db: IDBDatabase): Promise<any> => {
         const request = objectStore.getAll()
 
         request.onerror = (error) => rej(error)
-        request.onsuccess = (event) => {
+        request.onsuccess = () => {
             if (request.result.length == 0) rej(new Error())
             else res(request.result[0])
         }

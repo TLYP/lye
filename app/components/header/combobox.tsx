@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Input, InputBase, Combobox, useCombobox, Tooltip, ActionIcon } from '@mantine/core'
+import { Input, InputBase, Combobox, useCombobox, Tooltip } from '@mantine/core'
 import { theme } from '../../../theme'
 import { useAppSelector, useAppDispatch } from '@/lib/hooks'
 import { setActiveSession } from '@/lib/sessions'

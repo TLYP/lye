@@ -73,8 +73,8 @@ export default function FocusEditorView({
     const activeSession = useAppSelector((state) => state.sessions.activeSession)
     const [session, setSession] = useState<null | SessionReference>(null)
     const dispatch = useAppDispatch()
-    const state = useRef<HTMLDivElement>()
-    const rootDiv = useRef<HTMLDivElement>()
+    const state = useRef<HTMLDivElement>(null)
+    const rootDiv = useRef<HTMLDivElement>(null)
     const duration = useAppSelector((state) =>
         Math.floor((state.audioPlayer.audio?.duration ?? 0) * 1000)
     )
@@ -144,7 +144,7 @@ export default function FocusEditorView({
         setDefaultWidth(rootDiv.current.getBoundingClientRect().width)
 
         const handleScroll = () => setScrollLeft(rootDiv.current!.scrollLeft)
-        let element = rootDiv.current
+        const element = rootDiv.current
         element.addEventListener('scroll', handleScroll)
 
         return () => {
@@ -390,7 +390,7 @@ export default function FocusEditorView({
 
     return (
         <div
-            ref={rootDiv as any}
+            ref={rootDiv}
             className="flex z-10 overflow-y-hidden overflow-x-hidden flex-col grow bg-background-800 bg-gradient-to-b from-background-950 to-45% to-background-900"
         >
             <div className="flex flex-col grow relative" style={{ width: width + 'px' }}>
@@ -398,142 +398,92 @@ export default function FocusEditorView({
                     style={{ left: Math.floor((currentTime / duration) * width) + 'px' }}
                     className="top-0 min-w-1 h-full bg-text-800 opacity-85 absolute z-50"
                 ></div>
-                <div className="flex justify-between h-4 w-full" ref={state as any}>
+                <div className="flex justify-between h-4 w-full" ref={state}>
                     <FocusEditorViewTimelineDetails
                         detailTime={detailTime}
                         duration={duration}
                         divwidth={width}
                     />
                 </div>
-                <div className="h-7 flex items-center relative grow w-full py-1">
-                    {/* drag component acceptor */}
-                    <DragToTimelineDrophandleComponent
-                        timedlineTarget={'primary'}
-                        scrollLeft={scrollLeft}
-                        width={width}
-                    />
 
-                    {timedlines.primary.map((item, i) => (
+                {[timedlines.primary, timedlines.secondary].map((value, k) => (
+                    <>
                         <div
-                            key={i}
-                            id={`detail-item-${item.uhash}`}
-                            className="border-text-800 border-[1px] absolute rounded flex justify-center items-center bg-background-800 h-8"
-                            style={{
-                                width: ((item.end - item.start) / duration) * width + 'px',
-                                left: (item.start / duration) * width + 'px'
-                            }}
+                            className="h-7 flex items-center relative grow w-full py-1 select-none"
+                            key={k}
                         >
-                            <div
-                                style={{
-                                    cursor:
-                                        mouseActivity == 'inactive' || activityTarget == i
-                                            ? 'w-resize'
-                                            : ''
-                                }}
-                                onMouseDown={(e) => {
-                                    setActivityTarget(item.uhash)
-                                    setMouseActivity('resizeleft')
-                                }}
-                                className="left-0 absolute w-2 h-full"
-                            ></div>
-                            <div
-                                style={{
-                                    cursor:
-                                        mouseActivity == 'inactive' || activityTarget == i
-                                            ? 'move'
-                                            : ''
-                                }}
-                                onMouseDown={(e) => {
-                                    setActivityTarget(item.uhash)
-                                    setMouseActivity('moving')
-                                    findActivityOffset(item.uhash, e.clientX)
-                                }}
-                                className="flex justify-center grow-[1]"
-                            >
-                                <span className="text-text-400 select-none">
-                                    {item.displayLineNumber}
-                                </span>
-                            </div>
-                            <div
-                                style={{
-                                    cursor:
-                                        mouseActivity == 'inactive' || activityTarget == i
-                                            ? 'e-resize'
-                                            : ''
-                                }}
-                                onMouseDown={(e) => {
-                                    setActivityTarget(item.uhash)
-                                    setMouseActivity('resizeright')
-                                }}
-                                className="right-0 absolute w-2 h-full"
-                            ></div>
-                        </div>
-                    ))}
-                </div>
-                <div className="h-7 flex items-center relative grow w-full py-1">
-                    <DragToTimelineDrophandleComponent
-                        timedlineTarget={'secondary'}
-                        scrollLeft={scrollLeft}
-                        width={width}
-                    />
+                            {/* drag component acceptor */}
+                            <DragToTimelineDrophandleComponent
+                                timedlineTarget={k == 0 ? 'primary' : 'secondary'}
+                                scrollLeft={scrollLeft}
+                                width={width}
+                            />
 
-                    {timedlines.secondary.map((item, i) => (
-                        <div
-                            key={i}
-                            id={`detail-item-${item.uhash}`}
-                            className="border-text-800 border-[1px] absolute rounded flex justify-center items-center bg-background-800 h-8"
-                            style={{
-                                width: ((item.end - item.start) / duration) * width + 'px',
-                                left: (item.start / duration) * width + 'px'
-                            }}
-                        >
-                            <div
-                                style={{
-                                    cursor:
-                                        mouseActivity == 'inactive' || activityTarget == i
-                                            ? 'w-resize'
-                                            : ''
-                                }}
-                                onMouseDown={(e) => {
-                                    setActivityTarget(item.uhash)
-                                    setMouseActivity('resizeleft')
-                                }}
-                                className="left-0 absolute w-2 h-full"
-                            ></div>
-                            <div
-                                style={{
-                                    cursor:
-                                        mouseActivity == 'inactive' || activityTarget == i
-                                            ? 'move'
-                                            : ''
-                                }}
-                                onMouseDown={(e) => {
-                                    setActivityTarget(item.uhash)
-                                    setMouseActivity('moving')
-                                    findActivityOffset(item.uhash, e.clientX)
-                                }}
-                                className="flex justify-center grow-[1]"
-                            >
-                                <span className="text-text-400 select-none">
-                                    {item.displayLineNumber}
-                                </span>
-                            </div>
-                            <div
-                                style={{
-                                    cursor:
-                                        mouseActivity == 'inactive' || activityTarget == i
-                                            ? 'e-resize'
-                                            : ''
-                                }}
-                                onMouseDown={(e) => {
-                                    setActivityTarget(item.uhash)
-                                    setMouseActivity('resizeright')
-                                }}
-                                className="right-0 absolute w-2 h-full"
-                            ></div>
+                            {value.map((item, i) => (
+                                <>
+                                    <div
+                                        key={i}
+                                        id={`detail-item-${item.uhash}`}
+                                        className="border-text-800 border-[1px] absolute rounded flex justify-center items-center bg-background-800 h-8"
+                                        style={{
+                                            width:
+                                                ((item.end - item.start) / duration) * width + 'px',
+                                            left: (item.start / duration) * width + 'px'
+                                        }}
+                                    >
+                                        <div
+                                            style={{
+                                                cursor:
+                                                    mouseActivity == 'inactive' ||
+                                                    activityTarget == i
+                                                        ? 'w-resize'
+                                                        : ''
+                                            }}
+                                            onMouseDown={() => {
+                                                setActivityTarget(item.uhash)
+                                                setMouseActivity('resizeleft')
+                                            }}
+                                            className="left-0 absolute w-2 h-full"
+                                        ></div>
+                                        <div
+                                            style={{
+                                                cursor:
+                                                    mouseActivity == 'inactive' ||
+                                                    activityTarget == i
+                                                        ? 'move'
+                                                        : ''
+                                            }}
+                                            onMouseDown={(e) => {
+                                                setActivityTarget(item.uhash)
+                                                setMouseActivity('moving')
+                                                findActivityOffset(item.uhash, e.clientX)
+                                            }}
+                                            className="flex justify-center grow-[1]"
+                                        >
+                                            <span className="text-text-400">
+                                                {item.displayLineNumber}
+                                            </span>
+                                        </div>
+                                        <div
+                                            style={{
+                                                cursor:
+                                                    mouseActivity == 'inactive' ||
+                                                    activityTarget == i
+                                                        ? 'e-resize'
+                                                        : ''
+                                            }}
+                                            onMouseDown={() => {
+                                                setActivityTarget(item.uhash)
+                                                setMouseActivity('resizeright')
+                                            }}
+                                            className="right-0 absolute w-2 h-full"
+                                        ></div>
+                                    </div>
+                                </>
+                            ))}
                         </div>
-                    ))}
-                </div>
+                    </>
+                ))}
             </div>
         </div>
     )

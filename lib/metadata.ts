@@ -1,4 +1,7 @@
-import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
+/* eslint-disable @typescript-eslint/no-empty-object-type */
+/* eslint-disable no-empty-pattern */
+
+import { createSlice } from '@reduxjs/toolkit'
 
 export type MetadataState = {}
 

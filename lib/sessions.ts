@@ -1,4 +1,4 @@
-import { SessionReference, SessionData } from '@/app/cachedb/sessions'
+import { SessionData } from '@/app/cachedb/sessions'
 
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 
